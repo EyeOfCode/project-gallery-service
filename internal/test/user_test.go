@@ -77,8 +77,14 @@ func TestUserList(t *testing.T) {
 		queryParams    map[string]string
 		setupMock      func(*MockUserRepository)
 		expectedStatus int
-		expectedTotal  int64
-		expectError    bool
+		expectedData   struct {
+			Page       int         `json:"page"`
+			PageSize   int         `json:"pageSize"`
+			TotalItems int64       `json:"totalItems"`
+			TotalPages int         `json:"totalPages"`
+			Items      []model.User `json:"items"`
+		}
+		expectError bool
 	}{
 		{
 			name: "Success - No Filters",
@@ -88,31 +94,56 @@ func TestUserList(t *testing.T) {
 			},
 			setupMock: func(m *MockUserRepository) {
 				m.On("Count", mock.Anything, mock.Anything).Return(2, nil)
-				m.On("FindAll", mock.Anything, mock.Anything, mock.Anything).Return([]model.User{
+				users := []model.User{
 					{ID: primitive.ObjectID{}, Name: "User1"},
 					{ID: primitive.ObjectID{}, Name: "User2"},
-				}, nil)
+				}
+				m.On("FindAll", mock.Anything, mock.Anything, mock.Anything).Return(users, nil)
 			},
 			expectedStatus: 200,
-			expectedTotal:  2,
-			expectError:    false,
+			expectedData: struct {
+				Page       int         `json:"page"`
+				PageSize   int         `json:"pageSize"`
+				TotalItems int64       `json:"totalItems"`
+				TotalPages int         `json:"totalPages"`
+				Items      []model.User `json:"items"`
+			}{
+				Page:       1,
+				PageSize:   10,
+				TotalItems: 2,
+				TotalPages: 1,
+				Items: []model.User{
+					{ID: primitive.ObjectID{}, Name: "User1"},
+					{ID: primitive.ObjectID{}, Name: "User2"},
+				},
+			},
+			expectError: false,
 		},
 		{
-			name: "Success - With Name Filter",
+			name: "Success - Empty Result",
 			queryParams: map[string]string{
 				"page": "1",
 				"size": "10",
-				"name": "User1",
 			},
 			setupMock: func(m *MockUserRepository) {
-				m.On("Count", mock.Anything, mock.Anything).Return(1, nil)
-				m.On("FindAll", mock.Anything, mock.Anything, mock.Anything).Return([]model.User{
-					{ID: primitive.ObjectID{}, Name: "User1"},
-				}, nil)
+				m.On("Count", mock.Anything, mock.Anything).Return(0, nil)
+				m.On("FindAll", mock.Anything, mock.Anything, mock.Anything).Return([]model.User{}, nil)
 			},
 			expectedStatus: 200,
-			expectedTotal:  1,
-			expectError:    false,
+			expectedData: struct {
+				Page       int         `json:"page"`
+				PageSize   int         `json:"pageSize"`
+				TotalItems int64       `json:"totalItems"`
+				TotalPages int         `json:"totalPages"`
+				Items      []model.User `json:"items"`
+			}{
+				Page:       1,
+				PageSize:   10,
+				TotalItems: 0,
+				TotalPages: 0,
+				Items:      []model.User{},
+			},
+			expectError: false,
 		},
 		{
 			name: "Error - Service Failure",
@@ -124,7 +155,6 @@ func TestUserList(t *testing.T) {
 				m.On("Count", mock.Anything, mock.Anything).Return(0, errors.New("database error"))
 			},
 			expectedStatus: 500,
-			expectedTotal:  0,
 			expectError:    true,
 		},
 	}
@@ -151,15 +181,20 @@ func TestUserList(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, resp.StatusCode)
 
 			if !tt.expectError {
-					var result struct {
-							Data struct {
-									Items []model.User `json:"items"`
-									Total int64       `json:"total"`
-							} `json:"data"`
-					}
-					err := json.NewDecoder(resp.Body).Decode(&result)
-					assert.NoError(t, err)
-					assert.Equal(t, tt.expectedTotal, result.Data.Total)
+				var result struct {
+					Data    struct {
+						Page       int         `json:"page"`
+						PageSize   int         `json:"pageSize"`
+						TotalItems int64       `json:"totalItems"`
+						TotalPages int         `json:"totalPages"`
+						Items      []model.User `json:"items"`
+					} `json:"data"`
+					Success bool `json:"success"`
+				}
+				err := json.NewDecoder(resp.Body).Decode(&result)
+				assert.NoError(t, err)
+				assert.True(t, result.Success)
+				assert.Equal(t, tt.expectedData, result.Data)
 			}
 
 			mockRepo.AssertExpectations(t)
