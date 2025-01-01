@@ -24,11 +24,15 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
     }
 }
 
-// @Summary User list endpoint
-// @Description Get the API's user list
-// @Tags admin
+// @Summary List users
+// @Description Get paginated list of users with optional filtering 
+// @Tags user
 // @Accept json
 // @Produce json
+// @Param page query int false "Page number" default(1) 
+// @Param page_size query int false "Page size" default(10)
+// @Param name query string false "Filter by name"
+// @Success 200
 // @Router /user/list [get]
 func (u *UserHandler) UserList(c *fiber.Ctx) error {
     page, pageSize := utils.PaginationParams(c)

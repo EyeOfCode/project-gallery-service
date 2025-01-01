@@ -8,9 +8,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	_ "go-fiber-api/pkg/docs"
+	_ "go-fiber-api/docs"
 
-	"github.com/gofiber/swagger"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 
 	"go-fiber-api/pkg/utils"
 )
@@ -43,5 +43,5 @@ func (app *Application) SetupRoutes() {
 	}
 
 	// Swagger setup
-	app.App.Get("/swagger/*", swagger.HandlerDefault)
+	app.App.Get("/swagger/*", fiberSwagger.WrapHandler)
 }

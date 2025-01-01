@@ -1,15 +1,49 @@
+basePath: /api/v1
+host: localhost:8000
 info:
-  contact: {}
+  contact:
+    email: champuplove@gmail.com
+    name: API Support
+  description: A RESTful API server with user authentication and MongoDB integration
+  termsOfService: https://mywebideal.work
+  title: Example Go Project API
+  version: "1.0"
 paths:
   /user/list:
     get:
       consumes:
       - application/json
-      description: Get the API's user list
+      description: Get paginated list of users with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
       produces:
       - application/json
-      responses: {}
-      summary: User list endpoint
+      responses:
+        "200":
+          description: OK
+      summary: List users
       tags:
-      - admin
+      - user
+schemes:
+- http
+- https
+securityDefinitions:
+  Bearer:
+    description: 'Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
