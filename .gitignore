@@ -9,6 +9,7 @@
 /vendor/
 /bin/
 /tmp/
+uploads
 
 # IDE
 .idea/
@@ -30,3 +31,9 @@ go.sum
 # OS
 .DS_Store
 Thumbs.db
+
+#DB
+mongodb_data
+
+#Test
+coverage.out
