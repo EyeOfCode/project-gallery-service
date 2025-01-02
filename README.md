@@ -1,4 +1,4 @@
-# example golang
+# example golang fiber
 
 ## stack
 
@@ -57,9 +57,9 @@ clear_on_rebuild = true
 
 - use swagger [x]
 - use ratelimit [x]
-- use jwt [ ]
+- use jwt [x]
 - use mongodb [x]
-- use auth [ ]
+- use auth [x]
 - use call external api [ ]
 - use upload and read file [ ]
 - use docker [x]
@@ -67,5 +67,6 @@ clear_on_rebuild = true
 - unit test [x]
 - restful api [ ]
 - relation db [ ]
-- permission roles [ ]
-- pagination [ ]
+- permission roles [x]
+- pagination [x]
+- redis [ ]

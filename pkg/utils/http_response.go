@@ -28,6 +28,14 @@ func SendError(c *fiber.Ctx, status int, message string) error {
     })
 }
 
+func SendValidationError(c *fiber.Ctx, err error) error {
+    errors := FormatValidationError(err)
+    return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+        "success": false,
+        "errors":  errors,
+    })
+}
+
 func FormatValidationError(err error) []string {
     var validationErrors validator.ValidationErrors
     errorMessages := make([]string, 0)

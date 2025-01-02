@@ -26,7 +26,7 @@ func (app *Application) SetupRoutes() {
 	// API version group
 	v1 := app.App.Group("/api/v1")
 
-	// authJwt := utils.NewAuthHandler(app.Config.JWTSecretKey, app.Config.JWTExpiresIn)
+	authJwt := utils.NewAuthHandler(app.Config.JWTSecretKey, app.Config.JWTExpiresIn)
 
 	// Global rate limit
 	v1.Use(middleware.RateLimit(100, time.Minute))
@@ -34,10 +34,25 @@ func (app *Application) SetupRoutes() {
 	// Public routes
 	public := v1.Group("")
 	{
-		// User routes with specific rate limit
-		user := public.Group("/user")
-		user.Use(middleware.RateLimit(20, time.Minute))
+		// Auth routes with specific rate limit
+		auth := public.Group("/auth")
+		auth.Use(middleware.RateLimit(20, time.Minute))
 		{
+			auth.Post("/login", app.UserHandler.Login)
+			auth.Post("/register", app.UserHandler.Register)
+		}
+	}
+
+	protected := v1.Group("")
+	// User routes with jwt
+	protected.Use(middleware.JWT(authJwt))
+	{
+		user := protected.Group("/user")
+		{
+			user.Put("/profile/:id", app.UserHandler.UpdateProfile)
+			user.Get("/profile", app.UserHandler.GetProfile)
+			user.Delete("/profile/:id", app.UserHandler.DeleteUser)
+
 			user.Get("/list", app.UserHandler.UserList)
 		}
 	}

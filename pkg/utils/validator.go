@@ -1,15 +1,24 @@
 package utils
 
 import (
+	"reflect"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
 )
 
-var validate = validator.New()
+var Validate *validator.Validate
 
 func SetupValidator() {
-    validate.RegisterValidation("password_validator", PasswordValidator)
+    Validate = validator.New()
+    Validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+        name := fld.Tag.Get("json")
+        if name == "-" {
+            return ""
+        }
+        return name
+    })
+    Validate.RegisterValidation("password_validator", PasswordValidator)
 }
 
 func PasswordValidator(fl validator.FieldLevel) bool {
@@ -22,7 +31,7 @@ func PasswordValidator(fl validator.FieldLevel) bool {
 
     return hasUpper && hasNumber && hasSpecial && hasLower
 }
-
 func ValidateStruct(payload interface{}) error {
-    return validate.Struct(payload)
+    Validate.SetTagName("binding")
+    return Validate.Struct(payload)
 }

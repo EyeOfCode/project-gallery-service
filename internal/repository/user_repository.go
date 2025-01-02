@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"go-fiber-api/internal/model"
+	"go-fiber-api/pkg/dto"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,9 +14,7 @@ import (
 
 type UserRepository interface {
     Create(ctx context.Context, user *model.User) error
-    FindByID(ctx context.Context, id string) (*model.User, error)
-    FindByEmail(ctx context.Context, email string) (*model.User, error)
-    Update(ctx context.Context, user *model.User) error
+    UpdateByID(ctx context.Context, id string, payload *dto.UpdateUserRequest) (*model.User, error)
     Delete(ctx context.Context, id string) error
     FindOne(ctx context.Context, query bson.M) (*model.User, error)
     FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error)
@@ -41,48 +40,41 @@ func (r *userRepository) Create(ctx context.Context, user *model.User) error {
     return err
 }
 
-func (r *userRepository) FindByID(ctx context.Context, id string) (*model.User, error) {
-    objectID, err := primitive.ObjectIDFromHex(id)
-    if err != nil {
-        return nil, err
-    }
-    
-    var user model.User
-    err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&user)
-    if err != nil {
-        return nil, err
-    }
-    
-    return &user, nil
-}
-
 func (r *userRepository) FindOne(ctx context.Context, query bson.M) (*model.User, error) {
     var user model.User
     err := r.collection.FindOne(ctx, query).Decode(&user)
     if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return nil, nil 
+        }
         return nil, err
     }
     return &user, nil
 }
 
-func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
-    var user model.User
-    err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+func (r *userRepository) UpdateByID(ctx context.Context, id string, payload *dto.UpdateUserRequest) (*model.User, error) {
+    objectID, err := primitive.ObjectIDFromHex(id)
     if err != nil {
         return nil, err
     }
-    return &user, nil
-}
 
-func (r *userRepository) Update(ctx context.Context, user *model.User) error {
-    user.UpdatedAt = time.Now()
-    
-    _, err := r.collection.UpdateOne(
+    opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+    var updatedUser model.User
+    err = r.collection.FindOneAndUpdate(
         ctx,
-        bson.M{"_id": user.ID},
-        bson.M{"$set": user},
-    )
-    return err
+        bson.M{"_id": objectID},
+        bson.M{
+            "$set": payload,
+            "$currentDate": bson.M{
+                "updated_at": true,
+            },
+        },
+        opts,
+    ).Decode(&updatedUser)
+    if err != nil {
+        return nil, err
+    }
+    return &updatedUser, nil
 }
 
 func (r *userRepository) Delete(ctx context.Context, id string) error {
