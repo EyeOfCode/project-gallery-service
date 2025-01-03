@@ -153,12 +153,8 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
     defer cancel()
 
     user, err := u.userService.FindByEmail(ctx, req.Email)
-    if err != nil {
-        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
-    }
-
-    if user == nil {
-        return utils.SendError(c, http.StatusUnauthorized, "Invalid email")
+    if err != nil || user == nil {
+        return utils.SendError(c, http.StatusNotFound, "Invalid email")
     }
 
     token, err := u.userService.Login(ctx, req.Password, user)
@@ -193,8 +189,8 @@ func (u *UserHandler) GetProfile(c *fiber.Ctx) error {
     }
 
     user, err := u.userService.FindByID(ctx, objID.Hex())
-    if err != nil {
-        return utils.SendError(c, http.StatusInternalServerError, err.Error())
+    if err != nil || user == nil {
+        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
     }
     res := &model.User{
         ID:    user.ID,
@@ -238,15 +234,11 @@ func (u *UserHandler) UpdateProfile(c *fiber.Ctx) error {
     }
 
     user, err := u.userService.FindByID(ctx, objID.Hex())
-    if err != nil {
-        return utils.SendError(c, http.StatusInternalServerError, err.Error())
-    }
-
-    if user == nil {
+    if err != nil || user == nil {
         return utils.SendError(c, http.StatusNotFound, "User not found")
     }
 
-    if err := u.userService.UpdateById(ctx, id, &req); err != nil {
+    if err := u.userService.UpdateById(ctx, objID, &req); err != nil {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
@@ -276,30 +268,26 @@ func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    targetObjID, err := primitive.ObjectIDFromHex(id)
+    paramId, err := primitive.ObjectIDFromHex(id)
     if err != nil {
         return utils.SendError(c, http.StatusBadRequest, "Invalid user ID format")
     }
 
-    currentObjID, err := primitive.ObjectIDFromHex(userID)
+    authId, err := primitive.ObjectIDFromHex(userID)
     if err != nil {
         return utils.SendError(c, http.StatusBadRequest, "Invalid session user ID format")
     }
 
-    user, err := u.userService.FindByID(ctx, targetObjID.Hex())
-    if err != nil {
-        return utils.SendError(c, http.StatusInternalServerError, err.Error())
-    }
-
-    if user == nil {
+    user, err := u.userService.FindByID(ctx, paramId.Hex())
+    if err != nil || user == nil {
         return utils.SendError(c, http.StatusNotFound, "User not found")
     }
 
-    if user.ID == currentObjID {
+    if user.ID == authId {
         return utils.SendError(c, http.StatusUnauthorized, "You cannot delete yourself")
     }
     
-    if err := u.userService.Delete(ctx, id); err != nil {
+    if err := u.userService.Delete(ctx, paramId); err != nil {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
     

@@ -84,7 +84,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
-	shopHandler := handlers.NewShopHandler(shopService)
+	shopHandler := handlers.NewShopHandler(shopService, userService)
 
 	// Create application instance
 	application := &routes.Application{

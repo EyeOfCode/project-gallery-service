@@ -60,6 +60,10 @@ func (app *Application) SetupRoutes() {
 		shop := protected.Group("/shop")
 		{
 			shop.Get("/list", app.ShopHandler.ShopList)
+			shop.Get("/:id", app.ShopHandler.GetShop)
+			shop.Post("/", app.ShopHandler.CreateShop)
+			shop.Put("/:id", app.ShopHandler.UpdateShop)
+			shop.Delete("/:id", app.ShopHandler.DeleteShop)
 		}
 	}
 

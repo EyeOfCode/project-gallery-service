@@ -7,6 +7,7 @@ import (
 	"go-fiber-api/internal/handlers"
 	"go-fiber-api/internal/model"
 	"go-fiber-api/internal/service"
+	"go-fiber-api/pkg/dto"
 	"net/http/httptest"
 	"testing"
 
@@ -19,56 +20,49 @@ import (
 )
 
 type MockUserRepository struct {
-    mock.Mock
+	mock.Mock
+}
+
+// UpdateByID implements repository.UserRepository.
+func (m *MockUserRepository) UpdateByID(ctx context.Context, id primitive.ObjectID, payload *dto.UpdateUserRequest) (*model.User, error) {
+	args := m.Called(ctx, id, payload)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
 }
 
 func (m *MockUserRepository) Create(ctx context.Context, user *model.User) error {
-    args := m.Called(ctx, user)
-    return args.Error(0)
-}
-
-func (m *MockUserRepository) FindByID(ctx context.Context, id string) (*model.User, error) {
-    args := m.Called(ctx, id)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
-    return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
-    args := m.Called(ctx, email)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
-    return args.Get(0).(*model.User), args.Error(1)
+	args := m.Called(ctx, user)
+	return args.Error(0)
 }
 
 func (m *MockUserRepository) Update(ctx context.Context, user *model.User) error {
-    args := m.Called(ctx, user)
-    return args.Error(0)
+	args := m.Called(ctx, user)
+	return args.Error(0)
 }
 
-func (m *MockUserRepository) Delete(ctx context.Context, id string) error {
-    args := m.Called(ctx, id)
-    return args.Error(0)
+func (m *MockUserRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
 
 func (m *MockUserRepository) FindOne(ctx context.Context, query bson.M) (*model.User, error) {
-    args := m.Called(ctx, query)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
-    }
-    return args.Get(0).(*model.User), args.Error(1)
+	args := m.Called(ctx, query)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
 }
 
 func (m *MockUserRepository) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error) {
-    args := m.Called(ctx, query, opts)
-    return args.Get(0).([]model.User), args.Error(1)
+	args := m.Called(ctx, query, opts)
+	return args.Get(0).([]model.User), args.Error(1)
 }
 
 func (m *MockUserRepository) Count(ctx context.Context, query bson.D) (int64, error) {
-    args := m.Called(ctx, query)
-    return int64(args.Int(0)), args.Error(1)
+	args := m.Called(ctx, query)
+	return int64(args.Int(0)), args.Error(1)
 }
 
 func TestUserList(t *testing.T) {
@@ -78,10 +72,10 @@ func TestUserList(t *testing.T) {
 		setupMock      func(*MockUserRepository)
 		expectedStatus int
 		expectedData   struct {
-			Page       int         `json:"page"`
-			PageSize   int         `json:"pageSize"`
-			TotalItems int64       `json:"totalItems"`
-			TotalPages int         `json:"totalPages"`
+			Page       int          `json:"page"`
+			PageSize   int          `json:"pageSize"`
+			TotalItems int64        `json:"totalItems"`
+			TotalPages int          `json:"totalPages"`
 			Items      []model.User `json:"items"`
 		}
 		expectError bool
@@ -102,10 +96,10 @@ func TestUserList(t *testing.T) {
 			},
 			expectedStatus: 200,
 			expectedData: struct {
-				Page       int         `json:"page"`
-				PageSize   int         `json:"pageSize"`
-				TotalItems int64       `json:"totalItems"`
-				TotalPages int         `json:"totalPages"`
+				Page       int          `json:"page"`
+				PageSize   int          `json:"pageSize"`
+				TotalItems int64        `json:"totalItems"`
+				TotalPages int          `json:"totalPages"`
 				Items      []model.User `json:"items"`
 			}{
 				Page:       1,
@@ -131,10 +125,10 @@ func TestUserList(t *testing.T) {
 			},
 			expectedStatus: 200,
 			expectedData: struct {
-				Page       int         `json:"page"`
-				PageSize   int         `json:"pageSize"`
-				TotalItems int64       `json:"totalItems"`
-				TotalPages int         `json:"totalPages"`
+				Page       int          `json:"page"`
+				PageSize   int          `json:"pageSize"`
+				TotalItems int64        `json:"totalItems"`
+				TotalPages int          `json:"totalPages"`
 				Items      []model.User `json:"items"`
 			}{
 				Page:       1,
@@ -164,7 +158,7 @@ func TestUserList(t *testing.T) {
 			app := fiber.New()
 			mockRepo := new(MockUserRepository)
 			tt.setupMock(mockRepo)
-			
+
 			userService := service.NewUserService(mockRepo)
 			userHandler := handlers.NewUserHandler(userService)
 			app.Get("/user/list", userHandler.UserList)
@@ -182,11 +176,11 @@ func TestUserList(t *testing.T) {
 
 			if !tt.expectError {
 				var result struct {
-					Data    struct {
-						Page       int         `json:"page"`
-						PageSize   int         `json:"pageSize"`
-						TotalItems int64       `json:"totalItems"`
-						TotalPages int         `json:"totalPages"`
+					Data struct {
+						Page       int          `json:"page"`
+						PageSize   int          `json:"pageSize"`
+						TotalItems int64        `json:"totalItems"`
+						TotalPages int          `json:"totalPages"`
 						Items      []model.User `json:"items"`
 					} `json:"data"`
 					Success bool `json:"success"`

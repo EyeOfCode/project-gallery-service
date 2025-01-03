@@ -86,11 +86,11 @@ func (s *UserService) FindByID(ctx context.Context, id string) (*model.User, err
     }
     return s.userRepo.FindOne(ctx, bson.M{"_id": objID})
 }
-func (s *UserService) UpdateById(ctx context.Context, id string, payload *dto.UpdateUserRequest) error {
+func (s *UserService) UpdateById(ctx context.Context, id primitive.ObjectID, payload *dto.UpdateUserRequest) error {
     _, err := s.userRepo.UpdateByID(ctx, id, payload)
     return err
 }
 
-func (s *UserService) Delete(ctx context.Context, id string) error {
+func (s *UserService) Delete(ctx context.Context, id primitive.ObjectID) error {
     return s.userRepo.Delete(ctx, id)
 }

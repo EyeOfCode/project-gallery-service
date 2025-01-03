@@ -33,6 +33,18 @@ definitions:
     - name
     - password
     type: object
+  dto.ShopRequest:
+    properties:
+      budget:
+        type: number
+      name:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - budget
+    - name
+    type: object
   dto.UpdateUserRequest:
     properties:
       name:
@@ -86,6 +98,87 @@ paths:
       summary: Register endpoint
       tags:
       - auth
+  /shop:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's create shop
+      parameters:
+      - description: Shop details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShopRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Create Shop endpoint
+      tags:
+      - shop
+  /shop/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Get the API's delete shop
+      parameters:
+      - description: Shop ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete Shop endpoint
+      tags:
+      - shop
+    get:
+      consumes:
+      - application/json
+      description: Get the API's get shop
+      parameters:
+      - description: Shop ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Get Shop endpoint
+      tags:
+      - shop
+    put:
+      consumes:
+      - application/json
+      description: Get the API's update shop
+      parameters:
+      - description: Shop ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Shop update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShopRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Update Shop endpoint
+      tags:
+      - shop
   /shop/list:
     get:
       consumes:

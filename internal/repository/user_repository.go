@@ -14,8 +14,8 @@ import (
 
 type UserRepository interface {
     Create(ctx context.Context, user *model.User) error
-    UpdateByID(ctx context.Context, id string, payload *dto.UpdateUserRequest) (*model.User, error)
-    Delete(ctx context.Context, id string) error
+    UpdateByID(ctx context.Context, id primitive.ObjectID, payload *dto.UpdateUserRequest) (*model.User, error)
+    Delete(ctx context.Context, id primitive.ObjectID) error
     FindOne(ctx context.Context, query bson.M) (*model.User, error)
     FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.User, error)
     Count(ctx context.Context, query bson.D) (int64, error)
@@ -52,17 +52,12 @@ func (r *userRepository) FindOne(ctx context.Context, query bson.M) (*model.User
     return &user, nil
 }
 
-func (r *userRepository) UpdateByID(ctx context.Context, id string, payload *dto.UpdateUserRequest) (*model.User, error) {
-    objectID, err := primitive.ObjectIDFromHex(id)
-    if err != nil {
-        return nil, err
-    }
-
+func (r *userRepository) UpdateByID(ctx context.Context, id primitive.ObjectID, payload *dto.UpdateUserRequest) (*model.User, error) {
     opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
     var updatedUser model.User
-    err = r.collection.FindOneAndUpdate(
+    err := r.collection.FindOneAndUpdate(
         ctx,
-        bson.M{"_id": objectID},
+        bson.M{"_id": id},
         bson.M{
             "$set": payload,
             "$currentDate": bson.M{
@@ -77,13 +72,8 @@ func (r *userRepository) UpdateByID(ctx context.Context, id string, payload *dto
     return &updatedUser, nil
 }
 
-func (r *userRepository) Delete(ctx context.Context, id string) error {
-    objectID, err := primitive.ObjectIDFromHex(id)
-    if err != nil {
-        return err
-    }
-    
-    _, err = r.collection.DeleteOne(ctx, bson.M{"_id": objectID})
+func (r *userRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
+    _, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
     return err
 }
 
