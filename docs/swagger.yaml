@@ -86,6 +86,36 @@ paths:
       summary: Register endpoint
       tags:
       - auth
+  /shop/list:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of shops with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      security:
+      - Bearer: []
+      summary: List shops
+      tags:
+      - shop
   /user/list:
     get:
       consumes:

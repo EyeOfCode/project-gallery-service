@@ -19,6 +19,7 @@ type Application struct {
 	App            *fiber.App
 	UserHandler    *handlers.UserHandler
 	AuthHandler    *utils.AuthHandler
+	ShopHandler    *handlers.ShopHandler
 	Config         *config.Config
 }
 
@@ -54,6 +55,11 @@ func (app *Application) SetupRoutes() {
 			user.Delete("/profile/:id", app.UserHandler.DeleteUser)
 
 			user.Get("/list", app.UserHandler.UserList)
+		}
+
+		shop := protected.Group("/shop")
+		{
+			shop.Get("/list", app.ShopHandler.ShopList)
 		}
 	}
 

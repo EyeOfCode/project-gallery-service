@@ -76,17 +76,21 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepository := repository.NewUserRepository(db)
+	shopRepository := repository.NewShopRepository(db)
 
 	// Initialize services
 	userService := service.NewUserService(userRepository)
+	shopService := service.NewShopService(shopRepository)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
+	shopHandler := handlers.NewShopHandler(shopService)
 
 	// Create application instance
 	application := &routes.Application{
 		App:            app,
 		UserHandler:    userHandler,
+		ShopHandler:    shopHandler,
 		Config:         cfg,
 	}
 

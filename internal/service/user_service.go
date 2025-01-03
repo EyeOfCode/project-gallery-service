@@ -66,8 +66,8 @@ func (s *UserService) Create(ctx context.Context, payload *dto.RegisterRequest) 
     return user, nil
 }
 
-func (s *UserService) Login(ctx context.Context, payload *dto.LoginRequest, user *model.User) (*string, error) {
-    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
+func (s *UserService) Login(ctx context.Context, password string, user *model.User) (*string, error) {
+    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
         return nil, err
     }
 

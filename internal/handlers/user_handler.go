@@ -112,11 +112,21 @@ func (u *UserHandler) Register(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
-    res := &model.User{
+    token, err := u.userService.Login(ctx, req.Password, user)
+    if err != nil {
+        return utils.SendError(c, http.StatusUnauthorized, "Invalid password")
+    }
+
+    info := &model.User{
         ID:    user.ID,
         Name:  user.Name,
         Email: user.Email,
         Roles: user.Roles,
+    }
+    
+    res := fiber.Map{
+        "info": info,
+        "token": token,
     }
     return utils.SendSuccess(c, http.StatusOK, res)
 }
@@ -151,7 +161,7 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid email")
     }
 
-    token, err := u.userService.Login(ctx, &req, user)
+    token, err := u.userService.Login(ctx, req.Password, user)
     if err != nil {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid password")
     }
