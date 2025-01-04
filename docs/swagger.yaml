@@ -1,5 +1,17 @@
 basePath: /api/v1
 definitions:
+  dto.CategoryRequest:
+    properties:
+      name:
+        maxLength: 30
+        minLength: 3
+        type: string
+      shop_id:
+        type: string
+    required:
+    - name
+    - shop_id
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -98,6 +110,39 @@ paths:
       summary: Register endpoint
       tags:
       - auth
+  /category:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's create category
+      parameters:
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CategoryRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Create Category endpoint
+      tags:
+      - category
+  /category/list:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's get all categories
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Get All Categories endpoint
+      tags:
+      - category
   /shop:
     post:
       consumes:

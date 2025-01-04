@@ -16,11 +16,12 @@ import (
 )
 
 type Application struct {
-	App            *fiber.App
-	UserHandler    *handlers.UserHandler
-	AuthHandler    *utils.AuthHandler
-	ShopHandler    *handlers.ShopHandler
-	Config         *config.Config
+	App            	*fiber.App
+	UserHandler    	*handlers.UserHandler
+	AuthHandler    	*utils.AuthHandler
+	ShopHandler    	*handlers.ShopHandler
+	CategoryHandler *handlers.CategoryHandler
+	Config         	*config.Config
 }
 
 func (app *Application) SetupRoutes() {
@@ -64,6 +65,12 @@ func (app *Application) SetupRoutes() {
 			shop.Post("/", app.ShopHandler.CreateShop)
 			shop.Put("/:id", app.ShopHandler.UpdateShop)
 			shop.Delete("/:id", app.ShopHandler.DeleteShop)
+		}
+
+		category := protected.Group("/category")
+		{
+			category.Post("/", app.CategoryHandler.Create)
+			category.Get("/list", app.CategoryHandler.GetAll)
 		}
 	}
 

@@ -73,6 +73,59 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/category": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Post the API's create category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Create Category endpoint",
+                "parameters": [
+                    {
+                        "description": "Category details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/category/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get the API's get all categories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Get All Categories endpoint",
+                "responses": {}
+            }
+        },
         "/shop": {
             "post": {
                 "security": [
@@ -384,6 +437,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CategoryRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "shop_id"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 3
+                },
+                "shop_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginRequest": {
             "type": "object",
             "required": [
