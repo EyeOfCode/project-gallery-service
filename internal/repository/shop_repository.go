@@ -15,7 +15,7 @@ import (
 type ShopRepository interface {
 	Create(ctx context.Context, shop *model.Shop) (*model.Shop, error)
 	FindOne(ctx context.Context, query bson.M) (*model.Shop, error)
-	FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.Shop, error)
+	FindAll(ctx context.Context, query bson.M, opts *options.FindOptions) ([]model.Shop, error)
 	Count(ctx context.Context, query bson.D) (int64, error)
 	UpdateByID(ctx context.Context, id primitive.ObjectID, payload *dto.UpdateShopRequest) (*model.Shop, error)
 	Delete(ctx context.Context, id primitive.ObjectID) error
@@ -74,7 +74,7 @@ func (r *shopRepository) FindOne(ctx context.Context, query bson.M) (*model.Shop
 	return &shop, nil
 }
 
-func (r *shopRepository) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.Shop, error) {
+func (r *shopRepository) FindAll(ctx context.Context, query bson.M, opts *options.FindOptions) ([]model.Shop, error) {
 	pipeline := mongo.Pipeline{
 			{{Key: "$match", Value: query}},
 			{{Key: "$sort", Value: bson.D{{Key: "created_at", Value: -1}}}},

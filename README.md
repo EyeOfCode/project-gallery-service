@@ -70,3 +70,4 @@ clear_on_rebuild = true
 - permission roles [x]
 - pagination [x]
 - redis [ ]
+- refresh token [ ]

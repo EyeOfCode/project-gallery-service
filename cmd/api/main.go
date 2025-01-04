@@ -19,6 +19,7 @@ import (
 	"go-fiber-api/internal/routes"
 	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/database"
+	"go-fiber-api/pkg/middleware"
 	"go-fiber-api/pkg/utils"
 )
 
@@ -86,8 +87,11 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
-	shopHandler := handlers.NewShopHandler(shopService, userService)
+	shopHandler := handlers.NewShopHandler(shopService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService, shopService)
+
+	// Initialize middleware
+	authMiddleware := middleware.NewAuthMiddleware(userService, cfg)
 
 	// Create application instance
 	application := &routes.Application{
@@ -95,6 +99,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		UserHandler:    userHandler,
 		ShopHandler:    shopHandler,
 		CategoryHandler: categoryHandler,
+		AuthMiddleware:  authMiddleware,
 		Config:         cfg,
 	}
 

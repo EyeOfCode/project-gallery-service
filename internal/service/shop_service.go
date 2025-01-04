@@ -20,7 +20,7 @@ func NewShopService(shopRepo repository.ShopRepository) *ShopService {
 		shopRepo: shopRepo,
 	}
 }
-func (s *ShopService) FindAll(ctx context.Context, query bson.D, opts *options.FindOptions) ([]model.Shop, error) {
+func (s *ShopService) FindAll(ctx context.Context, query bson.M, opts *options.FindOptions) ([]model.Shop, error) {
     return s.shopRepo.FindAll(ctx, query, opts)
 }
 

@@ -5,6 +5,8 @@ import (
 	"go-fiber-api/internal/model"
 	"go-fiber-api/internal/repository"
 	"go-fiber-api/pkg/dto"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CategoryService struct {
@@ -32,4 +34,8 @@ func (s *CategoryService) Create(ctx context.Context, payload *dto.CategoryReque
 
 func (s *CategoryService) FindAll(ctx context.Context) ([]model.Category, error) {
 	return s.categoryRepo.List(ctx)
+}
+
+func (s *CategoryService) Delete(ctx context.Context, id primitive.ObjectID) error {
+	return s.categoryRepo.Delete(ctx, id)
 }

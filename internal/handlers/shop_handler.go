@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/dto"
+	"go-fiber-api/pkg/middleware"
 	"go-fiber-api/pkg/utils"
 	"net/http"
 	"time"
@@ -16,13 +17,11 @@ import (
 
 type ShopHandler struct {
     shopService *service.ShopService
-    userService *service.UserService
 }
 
-func NewShopHandler(shopService *service.ShopService, userService *service.UserService) *ShopHandler {
+func NewShopHandler(shopService *service.ShopService) *ShopHandler {
     return &ShopHandler{
         shopService: shopService,
-        userService: userService,
     }
 }
 
@@ -53,12 +52,12 @@ func (s *ShopHandler) ShopList(c *fiber.Ctx) error {
         SetLimit(int64(pageSize)).
         SetSort(bson.D{{Key: "created_at", Value: -1}})
 
-    users, err := s.shopService.FindAll(ctx, bson.D{}, opts)
+    shops, err := s.shopService.FindAll(ctx, bson.M{}, opts)
     if err != nil {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
-    response := utils.CreatePagination(page, pageSize, total, users)
+    response := utils.CreatePagination(page, pageSize, total, shops)
     return utils.SendSuccess(c, http.StatusOK, response)
 }
 
@@ -84,18 +83,9 @@ func (s *ShopHandler) CreateShop(c *fiber.Ctx) error {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    userID, ok := c.Locals("userID").(string)
-    if !ok || userID == "" {
+    user, ok := middleware.GetUserFromContext(c)
+    if !ok {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
-    }
-
-    objID, err := primitive.ObjectIDFromHex(userID)
-    if err != nil {
-        return utils.SendError(c, http.StatusBadRequest, "Invalid ID format")
-    }
-    user, err := s.userService.FindByID(ctx, objID.Hex())
-    if err != nil {
-        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
     }
 
     shop, err := s.shopService.Create(ctx, &req, user)
@@ -103,7 +93,14 @@ func (s *ShopHandler) CreateShop(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
-    return utils.SendSuccess(c, http.StatusCreated, shop)
+    res := &dto.UpdateShopResponse{
+        ID:        shop.ID,
+        Name:      shop.Name,
+        Budget:    shop.Budget,
+        CreatedAt: shop.CreatedAt,
+        UpdatedAt: shop.UpdatedAt,
+    }
+    return utils.SendSuccess(c, http.StatusCreated, res)
 }
 
 // @Summary Get Shop endpoint
@@ -156,18 +153,9 @@ func (s *ShopHandler) UpdateShop(c *fiber.Ctx) error {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    userID, ok := c.Locals("userID").(string)
-    if !ok || userID == "" {
+    user, ok := middleware.GetUserFromContext(c)
+    if !ok {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
-    }
-
-    authId, err := primitive.ObjectIDFromHex(userID)
-    if err != nil {
-        return utils.SendError(c, http.StatusBadRequest, "Invalid ID format")
-    }
-    user, err := s.userService.FindByID(ctx, authId.Hex())
-    if err != nil || user == nil {
-        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
     }
 
     id := c.Params("id")
@@ -224,18 +212,9 @@ func (s *ShopHandler) DeleteShop(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusNotFound, "Failed to find shop")
     }
 
-    userID, ok := c.Locals("userID").(string)
-    if !ok || userID == "" {
+    user, ok := middleware.GetUserFromContext(c)
+    if !ok {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
-    }
-
-    authId, err := primitive.ObjectIDFromHex(userID)
-    if err != nil {
-        return utils.SendError(c, http.StatusBadRequest, "Invalid ID format")    
-    }
-    user, err := s.userService.FindByID(ctx, authId.Hex())
-    if err != nil || user == nil {
-        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
     }
 
     if shop.CreatedBy != user.ID {
@@ -247,5 +226,5 @@ func (s *ShopHandler) DeleteShop(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusInternalServerError, "test")
     }
 
-    return utils.SendSuccess(c, http.StatusOK, nil)
+    return utils.SendSuccess(c, http.StatusOK, nil, "Shop deleted successfully")
 }

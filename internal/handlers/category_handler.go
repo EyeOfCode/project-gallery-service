@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/dto"
+	"go-fiber-api/pkg/middleware"
 	"go-fiber-api/pkg/utils"
 	"net/http"
 	"time"
@@ -55,6 +56,15 @@ func (h *CategoryHandler) Create(c *fiber.Ctx) error {
 		return utils.SendError(c, http.StatusNotFound, "Failed to find shop")
 	}
 
+	user, ok := middleware.GetUserFromContext(c)
+	if !ok {
+		return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
+	}
+
+	if shop.CreatedBy != user.ID {
+		return utils.SendError(c, http.StatusUnauthorized, "Unauthorized to create category")
+	}
+
 	category, err := h.categoryService.Create(ctx, &req, shop)
 	if err != nil {
 		return utils.SendError(c, http.StatusInternalServerError, "Failed to create category")
@@ -82,18 +92,16 @@ func (h *CategoryHandler) GetAll(c *fiber.Ctx) error {
 	return utils.SendSuccess(c, http.StatusOK, categories, "Categories fetched successfully")
 }
 
-func (h *CategoryHandler) UpdateCategory(c *fiber.Ctx) error {
-	var req dto.UpdateCategoryRequest
-	userId := c.Locals("userID").(string)
+// @Summary Delete Category endpoint
+// @Description Get the API's delete category
+// @Tags category
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "Category ID"
+// @Router /category/{id} [delete]
+func (h *CategoryHandler) DeleteCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
-
-	if err := c.BodyParser(&req); err != nil {
-		return utils.SendError(c, fiber.StatusBadRequest, "Invalid request body")
-	}
-
-	if err := utils.ValidateStruct(&req); err != nil {
-		return utils.SendValidationError(c, err)
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -108,10 +116,18 @@ func (h *CategoryHandler) UpdateCategory(c *fiber.Ctx) error {
 		return utils.SendError(c, http.StatusNotFound, "Failed to find shop")
 	}
 
-	category, err := h.categoryService.Update(ctx, &req)
-	if err != nil {
-		return utils.SendError(c, http.StatusInternalServerError, "Failed to update category")
+	user, ok := middleware.GetUserFromContext(c)
+	if !ok {
+		return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
 	}
 
-	return utils.SendSuccess(c, http.StatusOK, category, "Category updated successfully")
+	if shop.CreatedBy != user.ID {
+		return utils.SendError(c, http.StatusUnauthorized, "Unauthorized to delete category")
+	}
+
+	if err := h.categoryService.Delete(ctx, shop.ID); err != nil {
+		return utils.SendError(c, http.StatusInternalServerError, "Failed to delete category")
+	}
+
+	return utils.SendSuccess(c, http.StatusOK, nil, "Category deleted successfully")
 }

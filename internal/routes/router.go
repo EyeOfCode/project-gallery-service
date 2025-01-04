@@ -4,6 +4,7 @@ import (
 	"go-fiber-api/internal/config"
 	"go-fiber-api/internal/handlers"
 	"go-fiber-api/pkg/middleware"
+	"go-fiber-api/pkg/utils"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,69 +12,57 @@ import (
 	_ "go-fiber-api/docs"
 
 	fiberSwagger "github.com/swaggo/fiber-swagger"
-
-	"go-fiber-api/pkg/utils"
 )
 
 type Application struct {
-	App            	*fiber.App
-	UserHandler    	*handlers.UserHandler
-	AuthHandler    	*utils.AuthHandler
-	ShopHandler    	*handlers.ShopHandler
+	App             *fiber.App
+	UserHandler     *handlers.UserHandler
+	ShopHandler     *handlers.ShopHandler
 	CategoryHandler *handlers.CategoryHandler
-	Config         	*config.Config
+	AuthMiddleware  *middleware.AuthMiddleware
+	Config          *config.Config
 }
 
 func (app *Application) SetupRoutes() {
-	// API version group
+	// Swagger route
+	app.App.Get("/swagger/*", fiberSwagger.WrapHandler)
+
+	// API routes
 	v1 := app.App.Group("/api/v1")
-
-	authJwt := utils.NewAuthHandler(app.Config.JWTSecretKey, app.Config.JWTExpiresIn)
-
-	// Global rate limit
+	// Rate limit (You can use route by route)
 	v1.Use(middleware.RateLimit(100, time.Minute))
 
 	// Public routes
-	public := v1.Group("")
-	{
-		// Auth routes with specific rate limit
-		auth := public.Group("/auth")
-		auth.Use(middleware.RateLimit(20, time.Minute))
-		{
-			auth.Post("/login", app.UserHandler.Login)
-			auth.Post("/register", app.UserHandler.Register)
-		}
-	}
+	public := v1.Group("/auth")
+	public.Post("/register", app.UserHandler.Register)
+	public.Post("/login", app.UserHandler.Login)
 
-	protected := v1.Group("")
-	// User routes with jwt
-	protected.Use(middleware.JWT(authJwt))
-	{
-		user := protected.Group("/user")
-		{
-			user.Put("/profile/:id", app.UserHandler.UpdateProfile)
-			user.Get("/profile", app.UserHandler.GetProfile)
-			user.Delete("/profile/:id", app.UserHandler.DeleteUser)
+	// Protected routes
+	private := v1.Group("/")
+	private.Use(app.AuthMiddleware.Protected())
 
-			user.Get("/list", app.UserHandler.UserList)
-		}
+	// User routes
+	users := private.Group("/user")
+	users.Get("/profile", app.UserHandler.GetProfile)
+	
+	// Admin only routes
+	adminGroup := private.Group("/admin")
+	adminGroup.Use(app.AuthMiddleware.RequireRoles(utils.Role("admin")))
+	adminGroup.Get("/users", app.UserHandler.UserList)
+	adminGroup.Put("/user/:id", app.UserHandler.UpdateUser)
+	adminGroup.Delete("/user/:id", app.UserHandler.DeleteUser)
 
-		shop := protected.Group("/shop")
-		{
-			shop.Get("/list", app.ShopHandler.ShopList)
-			shop.Get("/:id", app.ShopHandler.GetShop)
-			shop.Post("/", app.ShopHandler.CreateShop)
-			shop.Put("/:id", app.ShopHandler.UpdateShop)
-			shop.Delete("/:id", app.ShopHandler.DeleteShop)
-		}
+	// Shop routes
+	shops := private.Group("/shop")
+	shops.Get("/list", app.ShopHandler.ShopList)
+	shops.Post("/", app.ShopHandler.CreateShop)
+	shops.Get("/:id", app.ShopHandler.GetShop)
+	shops.Put("/:id", app.ShopHandler.UpdateShop)
+	shops.Delete("/:id", app.ShopHandler.DeleteShop)
 
-		category := protected.Group("/category")
-		{
-			category.Post("/", app.CategoryHandler.Create)
-			category.Get("/list", app.CategoryHandler.GetAll)
-		}
-	}
-
-	// Swagger setup
-	app.App.Get("/swagger/*", fiberSwagger.WrapHandler)
+	// Category routes
+	categories := private.Group("/category")
+	categories.Get("/list", app.CategoryHandler.GetAll)
+	categories.Post("/", app.CategoryHandler.Create)
+	categories.Delete("/:id", app.CategoryHandler.DeleteCategory)
 }

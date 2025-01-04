@@ -74,6 +74,79 @@ info:
   title: Example Go Project API
   version: "1.0"
 paths:
+  /admin/user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Get the API's delete user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete endpoint
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Get the API's update user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Update endpoint
+      tags:
+      - user
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of users with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      security:
+      - Bearer: []
+      summary: List users
+      tags:
+      - admin
   /auth/login:
     post:
       consumes:
@@ -254,36 +327,6 @@ paths:
       summary: List shops
       tags:
       - shop
-  /user/list:
-    get:
-      consumes:
-      - application/json
-      description: Get paginated list of users with optional filtering
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Page size
-        in: query
-        name: page_size
-        type: integer
-      - description: Filter by name
-        in: query
-        name: name
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      security:
-      - Bearer: []
-      summary: List users
-      tags:
-      - admin
   /user/profile:
     get:
       consumes:
@@ -295,49 +338,6 @@ paths:
       security:
       - Bearer: []
       summary: Profile endpoint
-      tags:
-      - user
-  /user/profile/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Get the API's delete user
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - Bearer: []
-      summary: Delete endpoint
-      tags:
-      - admin
-    put:
-      consumes:
-      - application/json
-      description: Get the API's update user
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: User update details
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateUserRequest'
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - Bearer: []
-      summary: Update endpoint
       tags:
       - user
 schemes:

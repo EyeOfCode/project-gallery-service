@@ -5,6 +5,7 @@ import (
 	"go-fiber-api/internal/model"
 	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/dto"
+	"go-fiber-api/pkg/middleware"
 	"go-fiber-api/pkg/utils"
 	"net/http"
 	"time"
@@ -35,7 +36,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 // @Param page_size query int false "Page size" default(10)
 // @Param name query string false "Filter by name"
 // @Success 200
-// @Router /user/list [get]
+// @Router /admin/users [get]
 func (u *UserHandler) UserList(c *fiber.Ctx) error {
     page, pageSize := utils.PaginationParams(c)
 
@@ -175,23 +176,11 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
 // @Security Bearer
 // @Router /user/profile [get]
 func (u *UserHandler) GetProfile(c *fiber.Ctx) error {
-    userID, ok := c.Locals("userID").(string)
-    if !ok || userID == "" {
-		return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
-	}
+    user, ok := middleware.GetUserFromContext(c)
+    if !ok {
+        return utils.SendError(c, http.StatusUnauthorized, "User not found")
+    }
     
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    objID, err := primitive.ObjectIDFromHex(userID)
-    if err != nil {
-        return utils.SendError(c, http.StatusBadRequest, "Invalid user ID format")
-    }
-
-    user, err := u.userService.FindByID(ctx, objID.Hex())
-    if err != nil || user == nil {
-        return utils.SendError(c, http.StatusNotFound, "Failed to find user")
-    }
     res := &model.User{
         ID:    user.ID,
         Name:  user.Name,
@@ -212,8 +201,8 @@ func (u *UserHandler) GetProfile(c *fiber.Ctx) error {
 // @Security Bearer
 // @Param id path string true "User ID"
 // @Param request body dto.UpdateUserRequest true "User update details"
-// @Router /user/profile/{id} [put]
-func (u *UserHandler) UpdateProfile(c *fiber.Ctx) error {
+// @Router /admin/user/{id} [put]
+func (u *UserHandler) UpdateUser(c *fiber.Ctx) error {
     var req dto.UpdateUserRequest
     id := c.Params("id")
 
@@ -257,14 +246,10 @@ func (u *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 // @Produce json
 // @Security Bearer
 // @Param id path string true "User ID"
-// @Router /user/profile/{id} [delete]
+// @Router /admin/user/{id} [delete]
 func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
     id := c.Params("id")
-    userID, ok := c.Locals("userID").(string)
-    if !ok || userID == "" {
-		return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
-	}
-    
+
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
@@ -273,9 +258,9 @@ func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusBadRequest, "Invalid user ID format")
     }
 
-    authId, err := primitive.ObjectIDFromHex(userID)
-    if err != nil {
-        return utils.SendError(c, http.StatusBadRequest, "Invalid session user ID format")
+    auth, ok := middleware.GetUserFromContext(c)
+    if !ok {
+        return utils.SendError(c, http.StatusUnauthorized, "Invalid session")
     }
 
     user, err := u.userService.FindByID(ctx, paramId.Hex())
@@ -283,7 +268,7 @@ func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusNotFound, "User not found")
     }
 
-    if user.ID == authId {
+    if user.ID == auth.ID {
         return utils.SendError(c, http.StatusUnauthorized, "You cannot delete yourself")
     }
     

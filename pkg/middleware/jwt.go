@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"go-fiber-api/internal/config"
+	"go-fiber-api/internal/model"
+	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/utils"
 	"net/http"
 	"strings"
@@ -8,36 +11,70 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func JWT(auth *utils.AuthHandler, role ...utils.Role) fiber.Handler {
-    return func(c *fiber.Ctx) error {
-        authHeader := c.Get("Authorization")
-        if authHeader == "" {
-            return utils.SendError(c, http.StatusUnauthorized, "Authorization header is required")
-        }
+type AuthMiddleware struct {
+	userService *service.UserService
+	config      *config.Config
+}
 
-        bearerToken := strings.Split(authHeader, " ")
-        if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
-            return utils.SendError(c, http.StatusUnauthorized, "Invalid token format")
-        }
+func NewAuthMiddleware(userService *service.UserService, config *config.Config) *AuthMiddleware {
+	return &AuthMiddleware{
+		userService: userService,
+		config:      config,
+	}
+}
 
-        token := bearerToken[1]
-        claims, err := auth.ValidateToken(token)
-        if err != nil {
-            return utils.SendError(c, http.StatusUnauthorized, "Invalid token")
-        }
+// Protected validates JWT token and adds user to context
+func (m *AuthMiddleware) Protected() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return utils.SendError(c, http.StatusUnauthorized, "Authorization header is required")
+		}
 
-        if len(role) > 0 {
-            roleSlice := make([]utils.Role, len(claims.Roles))
-            for i, r := range claims.Roles {
-                roleSlice[i] = utils.Role(r)
-            }
+		bearerToken := strings.Split(authHeader, " ")
+		if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
+			return utils.SendError(c, http.StatusUnauthorized, "Invalid token format")
+		}
 
-            if !utils.IsValidRole(roleSlice, role) {
-                return utils.SendError(c, http.StatusForbidden, "Insufficient permissions")
-            }
-        }
+		auth := utils.NewAuthHandler(m.config.JWTSecretKey, m.config.JWTExpiresIn)
+		claims, err := auth.ValidateToken(bearerToken[1])
+		if err != nil {
+			return utils.SendError(c, http.StatusUnauthorized, "Invalid token")
+		}
 
-        c.Locals("userID", claims.UserID)
-        return c.Next()
-    }
+		user, err := m.userService.FindByID(c.Context(), claims.UserID)
+		if err != nil {
+			return utils.SendError(c, http.StatusUnauthorized, "User not found")
+		}
+
+		c.Locals("user", user)
+		return c.Next()
+	}
+}
+
+// RequireRoles checks if user has required roles
+func (m *AuthMiddleware) RequireRoles(roles ...utils.Role) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		user, ok := c.Locals("user").(*model.User)
+		if !ok {
+			return utils.SendError(c, http.StatusUnauthorized, "User not found in context")
+		}
+
+		userRoles := make([]utils.Role, len(user.Roles))
+		for i, r := range user.Roles {
+			userRoles[i] = utils.Role(r)
+		}
+
+		if !utils.IsValidRole(userRoles, roles) {
+			return utils.SendError(c, http.StatusForbidden, "Insufficient permissions")
+		}
+
+		return c.Next()
+	}
+}
+
+// GetUserFromContext retrieves user from context
+func GetUserFromContext(c *fiber.Ctx) (*model.User, bool) {
+	user, ok := c.Locals("user").(*model.User)
+	return user, ok
 }
