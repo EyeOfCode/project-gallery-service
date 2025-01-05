@@ -45,18 +45,6 @@ definitions:
     - name
     - password
     type: object
-  dto.ShopRequest:
-    properties:
-      budget:
-        type: number
-      name:
-        maxLength: 30
-        minLength: 3
-        type: string
-    required:
-    - budget
-    - name
-    type: object
   dto.UpdateUserRequest:
     properties:
       name:
@@ -203,6 +191,25 @@ paths:
       summary: Create Category endpoint
       tags:
       - category
+  /category/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Get the API's delete category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Delete Category endpoint
+      tags:
+      - category
   /category/list:
     get:
       consumes:
@@ -216,18 +223,55 @@ paths:
       summary: Get All Categories endpoint
       tags:
       - category
+  /file/shop/{shop_id}/download/{file_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's download file store
+      parameters:
+      - description: Shop ID
+        in: path
+        name: shop_id
+        required: true
+        type: string
+      - description: File Store ID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Download File Store endpoint
+      tags:
+      - file-store
   /shop:
     post:
       consumes:
-      - application/json
+      - multipart/form-data
       description: Post the API's create shop
       parameters:
-      - description: Shop details
-        in: body
-        name: request
+      - description: Shop name
+        in: formData
+        maxLength: 30
+        minLength: 3
+        name: name
         required: true
-        schema:
-          $ref: '#/definitions/dto.ShopRequest'
+        type: string
+      - description: Shop budget
+        in: formData
+        name: budget
+        required: true
+        type: number
+      - collectionFormat: csv
+        description: Multiple files to upload
+        in: formData
+        items:
+          type: file
+        name: files
+        type: array
       produces:
       - application/json
       responses: {}
@@ -275,7 +319,7 @@ paths:
       - shop
     put:
       consumes:
-      - application/json
+      - multipart/form-data
       description: Get the API's update shop
       parameters:
       - description: Shop ID
@@ -283,12 +327,25 @@ paths:
         name: id
         required: true
         type: string
-      - description: Shop update details
-        in: body
-        name: request
+      - description: Shop name
+        in: formData
+        maxLength: 30
+        minLength: 3
+        name: name
         required: true
-        schema:
-          $ref: '#/definitions/dto.ShopRequest'
+        type: string
+      - description: Shop budget
+        in: formData
+        name: budget
+        required: true
+        type: number
+      - collectionFormat: csv
+        description: Multiple files to upload
+        in: formData
+        items:
+          type: file
+        name: files
+        type: array
       produces:
       - application/json
       responses: {}

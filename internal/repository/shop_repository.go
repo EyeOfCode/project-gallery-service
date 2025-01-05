@@ -55,6 +55,18 @@ func (r *shopRepository) FindOne(ctx context.Context, query bson.M) (*model.Shop
 				"as":          "user",
 		}}},
 		{{Key: "$unwind", Value: "$user"}},
+		{{Key: "$lookup", Value: bson.M{
+				"from":         "categories",
+				"localField":   "_id",
+				"foreignField": "shop_id",
+				"as":          "categories",
+		}}},
+		{{Key: "$lookup", Value: bson.M{
+				"from":         "file_stores",
+				"localField":   "_id",
+				"foreignField": "shop_id",
+				"as":          "files",
+		}}},
 	}
 	cursor, err := r.collection.Aggregate(ctx, pipeline)
 	if err != nil {

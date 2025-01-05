@@ -61,7 +61,7 @@ clear_on_rebuild = true
 - use mongodb [x]
 - use auth [x]
 - use call external api [ ]
-- use upload and read file [ ]
+- use upload and read file [x]
 - use docker [x]
 - set pattern code [x]
 - unit test [x]

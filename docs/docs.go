@@ -240,6 +240,73 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/category/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get the API's delete category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Delete Category endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/file/shop/{shop_id}/download/{file_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get the API's download file store",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "file-store"
+                ],
+                "summary": "Download File Store endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shop ID",
+                        "name": "shop_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File Store ID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/shop": {
             "post": {
                 "security": [
@@ -249,7 +316,7 @@ const docTemplate = `{
                 ],
                 "description": "Post the API's create shop",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -260,13 +327,30 @@ const docTemplate = `{
                 "summary": "Create Shop endpoint",
                 "parameters": [
                     {
-                        "description": "Shop details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ShopRequest"
-                        }
+                        "maxLength": 30,
+                        "minLength": 3,
+                        "type": "string",
+                        "description": "Shop name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Shop budget",
+                        "name": "budget",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Multiple files to upload",
+                        "name": "files",
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
@@ -356,7 +440,7 @@ const docTemplate = `{
                 ],
                 "description": "Get the API's update shop",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -374,13 +458,30 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Shop update details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ShopRequest"
-                        }
+                        "maxLength": 30,
+                        "minLength": 3,
+                        "type": "string",
+                        "description": "Shop name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Shop budget",
+                        "name": "budget",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Multiple files to upload",
+                        "name": "files",
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
@@ -498,23 +599,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                }
-            }
-        },
-        "dto.ShopRequest": {
-            "type": "object",
-            "required": [
-                "budget",
-                "name"
-            ],
-            "properties": {
-                "budget": {
-                    "type": "number"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 30,
-                    "minLength": 3
                 }
             }
         },

@@ -15,12 +15,13 @@ import (
 )
 
 type Application struct {
-	App             *fiber.App
-	UserHandler     *handlers.UserHandler
-	ShopHandler     *handlers.ShopHandler
-	CategoryHandler *handlers.CategoryHandler
-	AuthMiddleware  *middleware.AuthMiddleware
-	Config          *config.Config
+	App              *fiber.App
+	UserHandler      *handlers.UserHandler
+	ShopHandler      *handlers.ShopHandler
+	CategoryHandler  *handlers.CategoryHandler
+	FileStoreHandler *handlers.FileStoreHandler
+	AuthMiddleware   *middleware.AuthMiddleware
+	Config           *config.Config
 }
 
 func (app *Application) SetupRoutes() {
@@ -65,4 +66,8 @@ func (app *Application) SetupRoutes() {
 	categories.Get("/list", app.CategoryHandler.GetAll)
 	categories.Post("/", app.CategoryHandler.Create)
 	categories.Delete("/:id", app.CategoryHandler.DeleteCategory)
+
+	// file routes
+	files := private.Group("/file")
+	files.Get("shop/:shop_id/download/:file_id", app.FileStoreHandler.Download)
 }

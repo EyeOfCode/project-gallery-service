@@ -79,16 +79,19 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	userRepository := repository.NewUserRepository(db)
 	shopRepository := repository.NewShopRepository(db)
 	categoryRepository := repository.NewCategoryRepository(db)
+	fileStoreRepository := repository.NewFileStoreRepository(db)
 
 	// Initialize services
 	userService := service.NewUserService(userRepository)
 	shopService := service.NewShopService(shopRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
+	fileStoreService := service.NewFileStoreService(fileStoreRepository)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
-	shopHandler := handlers.NewShopHandler(shopService)
+	shopHandler := handlers.NewShopHandler(shopService, fileStoreService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService, shopService)
+	fileStoreHandler := handlers.NewFileStoreHandler(fileStoreService, shopService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(userService, cfg)
@@ -99,6 +102,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		UserHandler:    userHandler,
 		ShopHandler:    shopHandler,
 		CategoryHandler: categoryHandler,
+		FileStoreHandler: fileStoreHandler,
 		AuthMiddleware:  authMiddleware,
 		Config:         cfg,
 	}

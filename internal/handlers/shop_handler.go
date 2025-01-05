@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"context"
+	"go-fiber-api/internal/model"
 	"go-fiber-api/internal/service"
 	"go-fiber-api/pkg/dto"
 	"go-fiber-api/pkg/middleware"
 	"go-fiber-api/pkg/utils"
+	"mime/multipart"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,11 +20,13 @@ import (
 
 type ShopHandler struct {
     shopService *service.ShopService
+    fileStoreService *service.FileStoreService
 }
 
-func NewShopHandler(shopService *service.ShopService) *ShopHandler {
+func NewShopHandler(shopService *service.ShopService, fileStoreService *service.FileStoreService) *ShopHandler {
     return &ShopHandler{
         shopService: shopService,
+        fileStoreService: fileStoreService,
     }
 }
 
@@ -64,17 +69,18 @@ func (s *ShopHandler) ShopList(c *fiber.Ctx) error {
 // @Summary Create Shop endpoint
 // @Description Post the API's create shop
 // @Tags shop
-// @Accept json
+// @Accept multipart/form-data
 // @Produce json
 // @Security Bearer
-// @Param request body dto.ShopRequest true "Shop details"
+// @Param name formData string true "Shop name" minlength(3) maxlength(30)
+// @Param budget formData number true "Shop budget"
+// @Param files formData []file false "Multiple files to upload"
 // @Router /shop [post]
 func (s *ShopHandler) CreateShop(c *fiber.Ctx) error {
     var req dto.ShopRequest
 
-    if err := c.BodyParser(&req); err != nil {
-        return utils.SendError(c, fiber.StatusBadRequest, "Invalid request body")
-    }
+    req.Name = c.FormValue("name")
+    req.Budget, _ = strconv.ParseFloat(c.FormValue("budget"), 64)
 
     if err := utils.ValidateStruct(&req); err != nil {
         return utils.SendValidationError(c, err)
@@ -93,10 +99,27 @@ func (s *ShopHandler) CreateShop(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
+    var filesResponse []*model.FileStore
+    if form, err := c.MultipartForm(); err == nil {
+        if files := form.File["files"]; len(files) > 0 {
+            var fileHeaders []multipart.FileHeader
+            for _, file := range files {
+                fileHeaders = append(fileHeaders, *file)
+            }
+            reqUpload := dto.FileStoreRequest{Files: fileHeaders, ShopID: shop.ID}
+            resUploads, err := s.fileStoreService.Uploads(ctx, &reqUpload, shop)
+            if err != nil {
+                return utils.SendError(c, http.StatusInternalServerError, err.Error())
+            }
+            filesResponse = resUploads
+        }
+    }
+
     res := &dto.UpdateShopResponse{
         ID:        shop.ID,
         Name:      shop.Name,
         Budget:    shop.Budget,
+        Files:     filesResponse,
         CreatedAt: shop.CreatedAt,
         UpdatedAt: shop.UpdatedAt,
     }
@@ -133,18 +156,19 @@ func (s *ShopHandler) GetShop(c *fiber.Ctx) error {
 // @Summary Update Shop endpoint
 // @Description Get the API's update shop
 // @Tags shop
-// @Accept json
+// @Accept multipart/form-data
 // @Produce json
 // @Security Bearer
 // @Param id path string true "Shop ID"
-// @Param request body dto.ShopRequest true "Shop update details"
+// @Param name formData string true "Shop name" minlength(3) maxlength(30)
+// @Param budget formData number true "Shop budget"
+// @Param files formData []file false "Multiple files to upload"
 // @Router /shop/{id} [put]
 func (s *ShopHandler) UpdateShop(c *fiber.Ctx) error {
     var req dto.ShopRequest
 
-    if err := c.BodyParser(&req); err != nil {
-        return utils.SendError(c, fiber.StatusBadRequest, "Invalid request body")
-    }
+    req.Name = c.FormValue("name")
+    req.Budget, _ = strconv.ParseFloat(c.FormValue("budget"), 64)
 
     if err := utils.ValidateStruct(&req); err != nil {
         return utils.SendValidationError(c, err)
@@ -178,10 +202,38 @@ func (s *ShopHandler) UpdateShop(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusInternalServerError, err.Error())
     }
 
+    filesOnShop, err := s.fileStoreService.FindAll(ctx, bson.M{"shop_id": shop.ID})
+    if err != nil {
+        return utils.SendError(c, http.StatusInternalServerError, err.Error())
+    }
+    for _, file := range filesOnShop {
+        err = s.fileStoreService.Delete(ctx, file.ID)
+        if err != nil {
+            return utils.SendError(c, http.StatusInternalServerError, err.Error())
+        }
+    }
+
+    var filesResponse []*model.FileStore
+    if form, err := c.MultipartForm(); err == nil {
+        if files := form.File["files"]; len(files) > 0 {
+            var fileHeaders []multipart.FileHeader
+            for _, file := range files {
+                fileHeaders = append(fileHeaders, *file)
+            }
+            reqUpload := dto.FileStoreRequest{Files: fileHeaders, ShopID: shop.ID}
+            resUploads, err := s.fileStoreService.Uploads(ctx, &reqUpload, shop)
+            if err != nil {
+                return utils.SendError(c, http.StatusInternalServerError, err.Error())
+            }
+            filesResponse = resUploads
+        }
+    }
+
     res := &dto.UpdateShopResponse{
         ID:        shop.ID,
         Name:      shop.Name,
         Budget:    shop.Budget,
+        Files:     filesResponse,
         CreatedAt: shop.CreatedAt,
         UpdatedAt: shop.UpdatedAt,
     }
@@ -219,6 +271,17 @@ func (s *ShopHandler) DeleteShop(c *fiber.Ctx) error {
 
     if shop.CreatedBy != user.ID {
         return utils.SendError(c, http.StatusUnauthorized, "Unauthorized")
+    }
+
+    filesOnShop, err := s.fileStoreService.FindAll(ctx, bson.M{"shop_id": shop.ID})
+    if err != nil {
+        return utils.SendError(c, http.StatusInternalServerError, err.Error())
+    }
+    for _, file := range filesOnShop {
+        err = s.fileStoreService.Delete(ctx, file.ID)
+        if err != nil {
+            return utils.SendError(c, http.StatusInternalServerError, err.Error())
+        }
     }
 
     err = s.shopService.Delete(ctx, shopId)
