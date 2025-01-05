@@ -62,7 +62,6 @@ func (f *FileStoreHandler) Download(c *fiber.Ctx) error {
 		return utils.SendError(c, http.StatusNotFound, "Failed to find file store")
 	}
 
-	// on local storage
 	fullPath := filepath.Join(fileStore.BasePath, fileStore.Name)
 	return c.Download(fullPath)
 }
