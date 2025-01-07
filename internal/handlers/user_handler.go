@@ -158,14 +158,45 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
         return utils.SendError(c, http.StatusNotFound, "Invalid email")
     }
 
-    token, err := u.userService.Login(ctx, req.Password, user)
+    tokenPair, err := u.userService.Login(ctx, req.Password, user)
     if err != nil {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid password")
     }
-    res := fiber.Map{
-        "token": token,
+    return utils.SendSuccess(c, http.StatusOK, tokenPair, "Login successful")
+}
+
+// @Summary Refresh endpoint
+// @Description Post the API's refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body dto.RefreshTokenRequest true "Refresh token"
+// @Router /auth/refresh [post]
+func (u *UserHandler) RefreshToken(c *fiber.Ctx) error {
+    var req dto.RefreshTokenRequest
+
+    if err := c.BodyParser(&req); err != nil {
+        return utils.SendError(c, fiber.StatusBadRequest, "Invalid request body")
     }
-    return utils.SendSuccess(c, http.StatusOK, res, "Login successful")
+
+    if err := utils.ValidateStruct(&req); err != nil {
+        return utils.SendValidationError(c, err)
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    tokenPair, err := u.userService.RefreshToken(ctx, req.RefreshToken)
+    if err != nil {
+        return utils.SendError(c, http.StatusUnauthorized, err.Error())
+    }
+
+    if tokenPair == nil {
+        return utils.SendError(c, http.StatusUnauthorized, "Invalid refresh token")
+    }
+
+    return utils.SendSuccess(c, http.StatusOK, tokenPair, "Refresh token successful")
 }
 
 // @Summary Profile endpoint
@@ -277,4 +308,37 @@ func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
     }
     
     return utils.SendSuccess(c, http.StatusOK, nil, "User deleted successfully")
+}
+
+// @Summary Logout endpoint
+// @Description Post the API's logout
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Header 200 {string} X-Refresh-Token "Refresh token for logout"
+// @Param X-Refresh-Token header string true "Refresh token"
+// @Router /auth/logout [get]
+func (u *UserHandler) Logout(c *fiber.Ctx) error {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    // Get access token from context
+    token, ok := c.Locals("token").(string)
+    if !ok {
+        return utils.SendError(c, http.StatusUnauthorized, "Token not found")
+    }
+
+    // Get refresh token from header
+    refreshToken := c.Get("X-Refresh-Token")
+    if refreshToken == "" {
+        return utils.SendError(c, http.StatusBadRequest, "Refresh token is required")
+    }
+
+    // Call logout service with both tokens
+    if err := u.userService.Logout(ctx, token, refreshToken); err != nil {
+        return utils.SendError(c, http.StatusInternalServerError, err.Error())
+    }
+
+    return utils.SendSuccess(c, http.StatusOK, nil, "Logout successful")
 }

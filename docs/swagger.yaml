@@ -22,6 +22,13 @@ definitions:
     - email
     - password
     type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
   dto.RegisterRequest:
     properties:
       confirm_password:
@@ -58,8 +65,8 @@ info:
     email: champuplove@gmail.com
     name: API Support
   description: A RESTful API server with user authentication and MongoDB integration
-  termsOfService: https://mywebideal.work
-  title: Example Go Project API
+  termsOfService: https://github.com/EyeOfCode
+  title: Example Go Fiber Project API
   version: "1.0"
 paths:
   /admin/user/{id}:
@@ -151,6 +158,45 @@ paths:
       - application/json
       responses: {}
       summary: Login endpoint
+      tags:
+      - auth
+  /auth/logout:
+    get:
+      consumes:
+      - application/json
+      description: Post the API's logout
+      parameters:
+      - description: Refresh token
+        in: header
+        name: X-Refresh-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Logout endpoint
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Post the API's refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: Refresh endpoint
       tags:
       - auth
   /auth/register:

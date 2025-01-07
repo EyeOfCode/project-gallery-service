@@ -74,6 +74,12 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		return nil, err
 	}
 
+	// Setup Redis
+	redisClient, err := database.ConnectRedis(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepository := repository.NewUserRepository(db)
@@ -83,7 +89,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	httpServiceRepository := repository.NewHttpServiceRepository()
 
 	// Initialize services
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, redisClient, cfg)
 	shopService := service.NewShopService(shopRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
 	fileStoreService := service.NewFileStoreService(fileStoreRepository)
@@ -117,10 +123,10 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	return application, nil
 }
 
-// @title Example Go Project API
+// @title Example Go Fiber Project API
 // @version 1.0
 // @description A RESTful API server with user authentication and MongoDB integration
-// @termsOfService https://mywebideal.work
+// @termsOfService https://github.com/EyeOfCode
 
 // @contact.name API Support
 // @contact.email champuplove@gmail.com

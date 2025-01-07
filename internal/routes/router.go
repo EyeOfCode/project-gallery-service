@@ -54,6 +54,11 @@ func (app *Application) SetupRoutes() {
 	// User routes
 	users := private.Group("/user")
 	users.Get("/profile", app.UserHandler.GetProfile)
+
+	// Auth routes
+	user := private.Group("/auth")
+	user.Get("/logout", app.UserHandler.Logout)
+	user.Post("/refresh", app.UserHandler.RefreshToken)
 	
 	// Admin only routes
 	adminGroup := private.Group("/admin")

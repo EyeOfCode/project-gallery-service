@@ -1,4 +1,6 @@
-# example golang fiber
+# Example golang fiber
+
+###### Example project go fiber api by EyeOfCode
 
 ## stack
 
@@ -12,6 +14,7 @@
 - rate limit
 - websocket
 - upload file
+- redis
 
 ## setup
 
@@ -69,5 +72,5 @@ clear_on_rebuild = true
 - relation db [x]
 - permission roles [x]
 - pagination [x]
-- redis [ ]
-- refresh token [ ]
+- redis [x]
+- refresh token [x]

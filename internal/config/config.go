@@ -17,8 +17,12 @@ type Config struct {
 
     JWTSecretKey   string
     JWTExpiresIn   string
+    JWTRefreshKey  string
+    JWTRefreshIn   string
 
     ArtworkApiURL   string
+
+    RedisURL       string
 }
 
 func LoadConfig() *Config {
@@ -37,7 +41,11 @@ func LoadConfig() *Config {
         
         JWTSecretKey:    os.Getenv("JWT_SECRET"),
         JWTExpiresIn:    os.Getenv("JWT_EXPIRY"),
+        JWTRefreshKey:   os.Getenv("JWT_REFRESH_SECRET"),
+        JWTRefreshIn:    os.Getenv("JWT_REFRESH_EXPIRY"),
 
         ArtworkApiURL:   os.Getenv("ART_WORK_API_URL"),
+
+        RedisURL:       os.Getenv("REDIS_URI"),
     }
 }
