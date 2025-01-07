@@ -307,6 +307,22 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/other/example/gallery": {
+            "get": {
+                "description": "Get the API's get Gallery",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "other"
+                ],
+                "summary": "Get Gallery endpoint",
+                "responses": {}
+            }
+        },
         "/shop": {
             "post": {
                 "security": [

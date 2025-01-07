@@ -60,7 +60,7 @@ clear_on_rebuild = true
 - use jwt [x]
 - use mongodb [x]
 - use auth [x]
-- use call external api [ ]
+- use call external api [x]
 - use upload and read file [x]
 - use docker [x]
 - set pattern code [x]

@@ -20,6 +20,7 @@ type Application struct {
 	ShopHandler      *handlers.ShopHandler
 	CategoryHandler  *handlers.CategoryHandler
 	FileStoreHandler *handlers.FileStoreHandler
+	OtherHandler     *handlers.OtherHandler
 	AuthMiddleware   *middleware.AuthMiddleware
 	Config           *config.Config
 }
@@ -34,9 +35,17 @@ func (app *Application) SetupRoutes() {
 	v1.Use(middleware.RateLimit(100, time.Minute))
 
 	// Public routes
-	public := v1.Group("/auth")
-	public.Post("/register", app.UserHandler.Register)
-	public.Post("/login", app.UserHandler.Login)
+	public := v1.Group("/")
+
+	// Auth routes
+	auth := v1.Group("/auth")
+	auth.Post("/register", app.UserHandler.Register)
+	auth.Post("/login", app.UserHandler.Login)
+	
+	// Other routes
+	other := public.Group("/other")
+	other.Use(middleware.RateLimit(20, time.Minute))
+	other.Get("/example/gallery", app.OtherHandler.GetListImages)
 
 	// Protected routes
 	private := v1.Group("/")

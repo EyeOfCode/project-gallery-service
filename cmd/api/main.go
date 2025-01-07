@@ -80,18 +80,21 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	shopRepository := repository.NewShopRepository(db)
 	categoryRepository := repository.NewCategoryRepository(db)
 	fileStoreRepository := repository.NewFileStoreRepository(db)
+	httpServiceRepository := repository.NewHttpServiceRepository()
 
 	// Initialize services
 	userService := service.NewUserService(userRepository)
 	shopService := service.NewShopService(shopRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
 	fileStoreService := service.NewFileStoreService(fileStoreRepository)
+	artworkApiService := service.NewArtworkApiService(httpServiceRepository, cfg)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
 	shopHandler := handlers.NewShopHandler(shopService, fileStoreService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService, shopService)
 	fileStoreHandler := handlers.NewFileStoreHandler(fileStoreService, shopService)
+	otherHandler := handlers.NewOtherHandler(artworkApiService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(userService, cfg)
@@ -103,6 +106,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		ShopHandler:    shopHandler,
 		CategoryHandler: categoryHandler,
 		FileStoreHandler: fileStoreHandler,
+		OtherHandler:   otherHandler,
 		AuthMiddleware:  authMiddleware,
 		Config:         cfg,
 	}

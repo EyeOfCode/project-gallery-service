@@ -247,6 +247,17 @@ paths:
       summary: Download File Store endpoint
       tags:
       - file-store
+  /other/example/gallery:
+    get:
+      consumes:
+      - application/json
+      description: Get the API's get Gallery
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Gallery endpoint
+      tags:
+      - other
   /shop:
     post:
       consumes:
