@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,12 +17,14 @@ import (
 )
 
 type UserService struct {
-    userRepo repository.UserRepository
+    userRepo    repository.UserRepository
+    redisClient *redis.Client
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserService {
+func NewUserService(userRepo repository.UserRepository, redisClient *redis.Client) *UserService {
     return &UserService{
         userRepo: userRepo,
+        redisClient: redisClient,
     }
 }
 func (s *UserService) FindByEmail(ctx context.Context, email string) (*model.User, error) {

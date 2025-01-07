@@ -74,6 +74,12 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		return nil, err
 	}
 
+	// Setup Redis
+	redisClient, err := database.ConnectRedis(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
 	userRepository := repository.NewUserRepository(db)
@@ -83,7 +89,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	httpServiceRepository := repository.NewHttpServiceRepository()
 
 	// Initialize services
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, redisClient)
 	shopService := service.NewShopService(shopRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
 	fileStoreService := service.NewFileStoreService(fileStoreRepository)

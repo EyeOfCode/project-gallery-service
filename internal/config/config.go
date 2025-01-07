@@ -19,6 +19,8 @@ type Config struct {
     JWTExpiresIn   string
 
     ArtworkApiURL   string
+
+    RedisURL       string
 }
 
 func LoadConfig() *Config {
@@ -39,5 +41,7 @@ func LoadConfig() *Config {
         JWTExpiresIn:    os.Getenv("JWT_EXPIRY"),
 
         ArtworkApiURL:   os.Getenv("ART_WORK_API_URL"),
+
+        RedisURL:       os.Getenv("REDIS_URI"),
     }
 }
