@@ -65,8 +65,8 @@ info:
     email: champuplove@gmail.com
     name: API Support
   description: A RESTful API server with user authentication and MongoDB integration
-  termsOfService: https://mywebideal.work
-  title: Example Go Project API
+  termsOfService: https://github.com/EyeOfCode
+  title: Example Go Fiber Project API
   version: "1.0"
 paths:
   /admin/user/{id}:

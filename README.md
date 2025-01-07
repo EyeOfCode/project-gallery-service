@@ -1,4 +1,6 @@
-# example golang fiber
+# Example golang fiber
+
+###### Example project go fiber api by EyeOfCode
 
 ## stack
 

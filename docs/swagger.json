@@ -6,8 +6,8 @@
     "swagger": "2.0",
     "info": {
         "description": "A RESTful API server with user authentication and MongoDB integration",
-        "title": "Example Go Project API",
-        "termsOfService": "https://mywebideal.work",
+        "title": "Example Go Fiber Project API",
+        "termsOfService": "https://github.com/EyeOfCode",
         "contact": {
             "name": "API Support",
             "email": "champuplove@gmail.com"

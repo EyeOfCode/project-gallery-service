@@ -123,10 +123,10 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	return application, nil
 }
 
-// @title Example Go Project API
+// @title Example Go Fiber Project API
 // @version 1.0
 // @description A RESTful API server with user authentication and MongoDB integration
-// @termsOfService https://mywebideal.work
+// @termsOfService https://github.com/EyeOfCode
 
 // @contact.name API Support
 // @contact.email champuplove@gmail.com

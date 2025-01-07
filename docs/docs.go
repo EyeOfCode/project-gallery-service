@@ -9,7 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://mywebideal.work",
+        "termsOfService": "https://github.com/EyeOfCode",
         "contact": {
             "name": "API Support",
             "email": "champuplove@gmail.com"
@@ -718,7 +718,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8000",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
-	Title:            "Example Go Project API",
+	Title:            "Example Go Fiber Project API",
 	Description:      "A RESTful API server with user authentication and MongoDB integration",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
