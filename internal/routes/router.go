@@ -41,6 +41,8 @@ func (app *Application) SetupRoutes() {
 	auth := v1.Group("/auth")
 	auth.Post("/register", app.UserHandler.Register)
 	auth.Post("/login", app.UserHandler.Login)
+	auth.Post("/refresh", app.UserHandler.RefreshToken)
+	auth.Get("/logout", app.AuthMiddleware.Protected(), app.UserHandler.Logout)
 	
 	// Other routes
 	other := public.Group("/other")

@@ -89,7 +89,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	httpServiceRepository := repository.NewHttpServiceRepository()
 
 	// Initialize services
-	userService := service.NewUserService(userRepository, redisClient)
+	userService := service.NewUserService(userRepository, redisClient, cfg)
 	shopService := service.NewShopService(shopRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
 	fileStoreService := service.NewFileStoreService(fileStoreRepository)

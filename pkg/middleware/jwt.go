@@ -36,18 +36,25 @@ func (m *AuthMiddleware) Protected() fiber.Handler {
 			return utils.SendError(c, http.StatusUnauthorized, "Invalid token format")
 		}
 
-		auth := utils.NewAuthHandler(m.config.JWTSecretKey, m.config.JWTExpiresIn)
-		claims, err := auth.ValidateToken(bearerToken[1])
+		token := bearerToken[1]
+		auth := utils.NewAuthHandler(m.config.JWTSecretKey, m.config.JWTRefreshKey, m.config.JWTExpiresIn, m.config.JWTRefreshIn)
+		claims, err := auth.ValidateToken(token)
 		if err != nil {
 			return utils.SendError(c, http.StatusUnauthorized, "Invalid token")
 		}
+
+		if err := m.userService.ValidateTokenWithRedis(c.Context(), token); err != nil {
+            return utils.SendError(c, http.StatusUnauthorized, "Token is invalid or has been revoked")
+        }
 
 		user, err := m.userService.FindByID(c.Context(), claims.UserID)
 		if err != nil {
 			return utils.SendError(c, http.StatusUnauthorized, "User not found")
 		}
 
-		c.Locals("user", user)
+        c.Locals("user", user)
+        c.Locals("token", token)
+        c.Locals("claims", claims)
 		return c.Next()
 	}
 }
