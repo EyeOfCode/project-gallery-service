@@ -170,6 +170,7 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
 // @Tags auth
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param request body dto.RefreshTokenRequest true "Refresh token"
 // @Router /auth/refresh [post]
 func (u *UserHandler) RefreshToken(c *fiber.Ctx) error {
@@ -187,7 +188,11 @@ func (u *UserHandler) RefreshToken(c *fiber.Ctx) error {
     defer cancel()
 
     tokenPair, err := u.userService.RefreshToken(ctx, req.RefreshToken)
-    if err != nil || tokenPair == nil {
+    if err != nil {
+        return utils.SendError(c, http.StatusUnauthorized, err.Error())
+    }
+
+    if tokenPair == nil {
         return utils.SendError(c, http.StatusUnauthorized, "Invalid refresh token")
     }
 
@@ -311,6 +316,8 @@ func (u *UserHandler) DeleteUser(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Security Bearer
+// @Header 200 {string} X-Refresh-Token "Refresh token for logout"
+// @Param X-Refresh-Token header string true "Refresh token"
 // @Router /auth/logout [get]
 func (u *UserHandler) Logout(c *fiber.Ctx) error {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

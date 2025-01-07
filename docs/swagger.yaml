@@ -165,6 +165,12 @@ paths:
       consumes:
       - application/json
       description: Post the API's logout
+      parameters:
+      - description: Refresh token
+        in: header
+        name: X-Refresh-Token
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}
@@ -188,6 +194,8 @@ paths:
       produces:
       - application/json
       responses: {}
+      security:
+      - Bearer: []
       summary: Refresh endpoint
       tags:
       - auth

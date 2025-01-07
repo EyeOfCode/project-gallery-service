@@ -176,11 +176,25 @@
                     "auth"
                 ],
                 "summary": "Logout endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Refresh token",
+                        "name": "X-Refresh-Token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         },
         "/auth/refresh": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Post the API's refresh token",
                 "consumes": [
                     "application/json"

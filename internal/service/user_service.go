@@ -83,10 +83,11 @@ func (s *UserService) Login(ctx context.Context, password string, user *model.Us
         return nil, err
     }
 
+    expires, _ := time.ParseDuration(s.config.JWTExpiresIn)
     if err := s.redisClient.Set(ctx, 
         tokenPair.AccessToken, 
         user.ID.Hex(), 
-        24*time.Hour).Err(); err != nil {
+        expires).Err(); err != nil {
         return nil, err
     }
     return tokenPair, nil
@@ -100,7 +101,7 @@ func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (*u
     }
 
     blacklisted, err := s.redisClient.Get(ctx, "blacklist:"+refreshToken).Result()
-    if err != nil || blacklisted != "" || err != redis.Nil {
+    if blacklisted != "" || err != redis.Nil {
         return nil, fiber.NewError(fiber.StatusUnauthorized, "Refresh token has been revoked")
     }
 
@@ -114,10 +115,11 @@ func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (*u
         return nil, err
     }
 
+    expires, _ := time.ParseDuration(s.config.JWTExpiresIn)
     if err := s.redisClient.Set(ctx, 
         tokenPair.AccessToken, 
         user.ID.Hex(), 
-        24*time.Hour).Err(); err != nil {
+        expires).Err(); err != nil {
         return nil, err
     }
 
@@ -173,10 +175,11 @@ func (s *UserService) Logout(ctx context.Context, accessToken, refreshToken stri
     pipe := s.redisClient.Pipeline()
 
     // Blacklist access token for 24h
+    expires, _ := time.ParseDuration(s.config.JWTExpiresIn)
     pipe.Set(ctx,
         "blacklist:"+accessToken,
         "true",
-        24*time.Hour)
+        expires)
 
     // Blacklist refresh token for 48h
     pipe.Set(ctx,
