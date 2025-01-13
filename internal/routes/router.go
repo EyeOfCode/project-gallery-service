@@ -15,7 +15,7 @@ import (
 
 type Application struct {
 	App              *fiber.App
-	FileStoreHandler *handlers.FileStoreHandler
+	TagsHandler      *handlers.TagsHandler
 	Config           *config.Config
 }
 
@@ -29,6 +29,8 @@ func (app *Application) SetupRoutes() {
 	v1.Use(middleware.RateLimit(100, time.Minute))
 
 	// Auth routes
-	file := v1.Group("/file")
-	file.Get("/", app.UserHandler.Register)
+	tags := v1.Group("/tags")
+	tags.Get("/", app.TagsHandler.GetAllTags)
+	tags.Post("/", app.TagsHandler.CreateTags)
+	tags.Delete("/:id", app.TagsHandler.DeleteTags)
 }

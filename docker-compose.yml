@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: go-app
+    container_name: go-app-gallery
     ports:
       - "8080:8080"
     depends_on:
@@ -12,7 +12,7 @@ services:
     volumes:
       - .:/app
     networks:
-      - app-network
+      - app-gallery-network
 
   mongodb:
     image: mongo:latest
@@ -28,10 +28,10 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     networks:
-      - app-network
+      - app-gallery-network
 
 networks:
-  app-network:
+  app-gallery-network:
     driver: bridge
 
 volumes:

@@ -14,8 +14,10 @@ import (
 
 	"pre-test-gallery-service/docs"
 	"pre-test-gallery-service/internal/config"
+	"pre-test-gallery-service/internal/handlers"
 	"pre-test-gallery-service/internal/repository"
 	"pre-test-gallery-service/internal/routes"
+	"pre-test-gallery-service/internal/service"
 	"pre-test-gallery-service/pkg/database"
 	"pre-test-gallery-service/pkg/utils"
 )
@@ -73,18 +75,18 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
-	fileStoreRepository := repository.NewFileStoreRepository(db)
-	// httpServiceRepository := repository.NewHttpServiceRepository()
+	tagsRepository := repository.NewTagsRepository(db)
 
 	// // Initialize services
-	// fileStoreService := service.NewFileStoreService(fileStoreRepository)
+	tagsService := service.NewTagsService(tagsRepository)
 
 	// // Initialize handlers
-	// otherHandler := handlers.NewOtherHandler(artworkApiService)
+	tagsHandler := handlers.NewTagsHandler(tagsService)
 
 	// Create application instance
 	application := &routes.Application{
 		App:            app,
+		TagsHandler:    tagsHandler,
 		Config:         cfg,
 	}
 
