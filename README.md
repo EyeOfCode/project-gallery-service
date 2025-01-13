@@ -1,6 +1,4 @@
-# Example golang fiber
-
-###### Example project go fiber api by EyeOfCode
+# Pre test gallery
 
 ## stack
 
@@ -12,8 +10,6 @@
 - jwt
 - air
 - rate limit
-- websocket
-- upload file
 - redis
 
 ## setup
@@ -58,19 +54,4 @@ clear_on_rebuild = true
 
 ## Feature
 
-- use swagger [x]
-- use ratelimit [x]
-- use jwt [x]
-- use mongodb [x]
-- use auth [x]
-- use call external api [x]
-- use upload and read file [x]
-- use docker [x]
-- set pattern code [x]
-- unit test [x]
-- restful api [x]
-- relation db [x]
-- permission roles [x]
-- pagination [x]
-- redis [x]
-- refresh token [x]
+- upload image

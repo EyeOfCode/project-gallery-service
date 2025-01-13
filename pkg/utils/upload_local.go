@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"go-fiber-api/pkg/dto"
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"pre-test-gallery-service/pkg/dto"
 )
 
 type File struct {

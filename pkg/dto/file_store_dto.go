@@ -2,8 +2,6 @@ package dto
 
 import (
 	"mime/multipart"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type FileRequest struct {
@@ -12,7 +10,6 @@ type FileRequest struct {
 
 type FileStoreRequest struct {
 	Files 		[]multipart.FileHeader `json:"files" binding:"required"`
-	ShopID    primitive.ObjectID 		 `json:"shop_id" binding:"required"`
 }
 
 type FileStoreUploadResponse struct {

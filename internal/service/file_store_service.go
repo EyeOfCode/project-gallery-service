@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"go-fiber-api/internal/model"
-	"go-fiber-api/internal/repository"
-	"go-fiber-api/pkg/dto"
-	"go-fiber-api/pkg/utils"
 	"mime/multipart"
+	"pre-test-gallery-service/internal/model"
+	"pre-test-gallery-service/internal/repository"
+	"pre-test-gallery-service/pkg/dto"
+	"pre-test-gallery-service/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

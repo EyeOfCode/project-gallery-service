@@ -2,9 +2,9 @@ package test
 
 import (
 	"context"
-	"go-fiber-api/internal/model"
-	"go-fiber-api/internal/service"
-	"go-fiber-api/pkg/dto"
+	"pre-test-gallery-service/internal/model"
+	"pre-test-gallery-service/internal/service"
+	"pre-test-gallery-service/pkg/dto"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

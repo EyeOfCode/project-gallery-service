@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"go-fiber-api/pkg/utils"
 	"net/http"
+	"pre-test-gallery-service/pkg/utils"
 	"sync"
 	"time"
 

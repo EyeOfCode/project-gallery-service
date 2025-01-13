@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"go-fiber-api/internal/model"
 	"os"
 	"path/filepath"
+	"pre-test-gallery-service/internal/model"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"

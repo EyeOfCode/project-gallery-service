@@ -12,15 +12,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"go-fiber-api/docs"
-	"go-fiber-api/internal/config"
-	"go-fiber-api/internal/handlers"
-	"go-fiber-api/internal/repository"
-	"go-fiber-api/internal/routes"
-	"go-fiber-api/internal/service"
-	"go-fiber-api/pkg/database"
-	"go-fiber-api/pkg/middleware"
-	"go-fiber-api/pkg/utils"
+	"pre-test-gallery-service/docs"
+	"pre-test-gallery-service/internal/config"
+	"pre-test-gallery-service/internal/repository"
+	"pre-test-gallery-service/internal/routes"
+	"pre-test-gallery-service/pkg/database"
+	"pre-test-gallery-service/pkg/utils"
 )
 
 func setupMongoDB(cfg *config.Config) (*mongo.Client, error) {
@@ -74,46 +71,20 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		return nil, err
 	}
 
-	// Setup Redis
-	redisClient, err := database.ConnectRedis(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBDatabase)
-	userRepository := repository.NewUserRepository(db)
-	shopRepository := repository.NewShopRepository(db)
-	categoryRepository := repository.NewCategoryRepository(db)
 	fileStoreRepository := repository.NewFileStoreRepository(db)
-	httpServiceRepository := repository.NewHttpServiceRepository()
+	// httpServiceRepository := repository.NewHttpServiceRepository()
 
-	// Initialize services
-	userService := service.NewUserService(userRepository, redisClient, cfg)
-	shopService := service.NewShopService(shopRepository)
-	categoryService := service.NewCategoryService(categoryRepository)
-	fileStoreService := service.NewFileStoreService(fileStoreRepository)
-	artworkApiService := service.NewArtworkApiService(httpServiceRepository, cfg)
+	// // Initialize services
+	// fileStoreService := service.NewFileStoreService(fileStoreRepository)
 
-	// Initialize handlers
-	userHandler := handlers.NewUserHandler(userService)
-	shopHandler := handlers.NewShopHandler(shopService, fileStoreService)
-	categoryHandler := handlers.NewCategoryHandler(categoryService, shopService)
-	fileStoreHandler := handlers.NewFileStoreHandler(fileStoreService, shopService)
-	otherHandler := handlers.NewOtherHandler(artworkApiService)
-
-	// Initialize middleware
-	authMiddleware := middleware.NewAuthMiddleware(userService, cfg)
+	// // Initialize handlers
+	// otherHandler := handlers.NewOtherHandler(artworkApiService)
 
 	// Create application instance
 	application := &routes.Application{
 		App:            app,
-		UserHandler:    userHandler,
-		ShopHandler:    shopHandler,
-		CategoryHandler: categoryHandler,
-		FileStoreHandler: fileStoreHandler,
-		OtherHandler:   otherHandler,
-		AuthMiddleware:  authMiddleware,
 		Config:         cfg,
 	}
 
