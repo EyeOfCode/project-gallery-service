@@ -9,56 +9,53 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
-    
-    - name: Build application
-      run: |
-        go mod download
-        go build -o myapp
-        
-    - name: Copy repository contents via scp
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Build application
+        run: |
+          go mod download
+          go build cmd/api/main.go
+
+      - name: Copy repository contents via scp
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          source: '.'
-          target: '/var/www/app/gallery-service'
+          source: "."
+          target: "/var/www/app/gallery-service"
           rm: true
 
-    - name: 'Create env file'
-      run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
 
-    - name: Copy env via scp
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
-        source: '.env'
-        target: '/var/www/app/gallery-service'
-        
-    - name: Executing remote command
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd /var/www/app/gallery-service/
-          export NVM_DIR=~/.nvm
-          source ~/.nvm/nvm.sh
-          chmod +x .env
-          chmod +x ./scripts/scripts.sh
-          ./scripts/scripts.sh
+      - name: Copy env via scp
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          source: ".env"
+          target: "/var/www/app/gallery-service"
+
+      - name: Execute deployment script
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            chmod +x .env
+            chmod +x ./scripts/scripts.sh
+            ./scripts/scripts.sh
