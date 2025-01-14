@@ -13,7 +13,7 @@ func UpdateSwaggerHost(host, port string) {
 	if env == "production" {
 		SwaggerInfo.Host = prodHost
 		SwaggerInfo.Schemes = []string{"https"}
+	}else{
+		SwaggerInfo.Host = fmt.Sprintf("%s:%s", host, port)
 	}
-	// Update the host directly in SwaggerInfo
-	SwaggerInfo.Host = fmt.Sprintf("%s:%s", host, port)
 }

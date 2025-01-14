@@ -18,7 +18,7 @@ definitions:
       updated_at:
         type: string
     type: object
-host: localhost:8000
+host: ${DOMAIN}
 info:
   contact:
     email: champuplove@gmail.com
