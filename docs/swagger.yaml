@@ -1,0 +1,87 @@
+basePath: /api/v1
+definitions:
+  dto.TagsRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  model.Tags:
+    properties:
+      _id:
+        type: string
+      created_at:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: champuplove@gmail.com
+    name: API Support
+  description: A RESTful API server
+  termsOfService: https://github.com/EyeOfCode
+  title: Service Gallery
+  version: "1.0"
+paths:
+  /tags:
+    get:
+      description: Get all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tags'
+            type: array
+      summary: Get all tags
+      tags:
+      - tags
+    post:
+      consumes:
+      - application/json
+      description: Create a new tag
+      parameters:
+      - description: Tags request
+        in: body
+        name: tags
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TagsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Tags'
+      summary: Create a new tag
+      tags:
+      - tags
+  /tags/{id}:
+    delete:
+      description: Delete a tag
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a tag
+      tags:
+      - tags
+schemes:
+- http
+- https
+swagger: "2.0"

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"pre-test-gallery-service/internal/model"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,8 +13,8 @@ import (
 type TagsRepository interface {
 	FindAll(ctx context.Context, query bson.M) ([]model.Tags, error)
 	FindOne(ctx context.Context, query bson.M) (*model.Tags, error)
-	Create(ctx context.Context, tags *model.Tags) ([]*model.Tags, error)
-	Delete(ctx context.Context, tags *model.Tags, id primitive.ObjectID) error
+	Create(ctx context.Context, tags *model.Tags) (error)
+	Delete(ctx context.Context, id primitive.ObjectID) error
 }
 
 type tagsRepository struct {
@@ -42,24 +43,24 @@ func (r *tagsRepository) FindOne(ctx context.Context, query bson.M) (*model.Tags
 	var result model.Tags
 	err := r.collection.FindOne(ctx, query).Decode(&result)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+            return nil, nil 
+        }
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (r *tagsRepository) Create(ctx context.Context, tags *model.Tags) ([]*model.Tags, error) {
-	if tags == nil {
-		return nil, nil
-	}
-	result, err := r.collection.InsertOne(ctx, tags)
-	if err != nil {
-		return nil, err
-	}
-	tags.ID = result.InsertedID.(primitive.ObjectID)
-	return []*model.Tags{tags}, nil
+func (r *tagsRepository) Create(ctx context.Context, tags *model.Tags) (error) {
+	tags.ID = primitive.NewObjectID()
+    tags.CreatedAt = time.Now()
+    tags.UpdatedAt = time.Now()
+    
+    _, err := r.collection.InsertOne(ctx, tags)
+    return err
 }
 
-func (r *tagsRepository) Delete(ctx context.Context, tags *model.Tags, id primitive.ObjectID) error {
+func (r *tagsRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }

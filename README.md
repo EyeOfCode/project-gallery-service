@@ -1,5 +1,7 @@
 # Pre test gallery
 
+## Can read api on swagger http://{host}:{port}/swagger
+
 ## stack
 
 - docker
@@ -7,10 +9,8 @@
 - go fiber
 - mongodb
 - swagger
-- jwt
 - air
 - rate limit
-- redis
 
 ## setup
 

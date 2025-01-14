@@ -96,9 +96,9 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 	return application, nil
 }
 
-// @title Example Go Fiber Project API
+// @title Service Gallery
 // @version 1.0
-// @description A RESTful API server with user authentication and MongoDB integration
+// @description A RESTful API server
 // @termsOfService https://github.com/EyeOfCode
 
 // @contact.name API Support
@@ -107,10 +107,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 // @host localhost:8000
 // @BasePath /api/v1
 // @schemes http https
-// @securityDefinitions.apikey Bearer
 // @in header
-// @name Authorization
-// @description Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".
 func main() {
 	cfg := config.LoadConfig()
 

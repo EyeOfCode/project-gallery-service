@@ -1,10 +1,16 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"pre-test-gallery-service/internal/service"
+	"pre-test-gallery-service/pkg/dto"
 	"pre-test-gallery-service/pkg/utils"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TagsHandler struct {
@@ -22,7 +28,7 @@ func NewTagsHandler(tagsService *service.TagsService) *TagsHandler {
 // @Tags tags
 // @Produce json
 // @Success 200 {object} []model.Tags
-// @Router /api/v1/tags [get]
+// @Router /tags [get]
 func (h *TagsHandler) GetAllTags(c *fiber.Ctx) error {
 	tags, err := h.tagsService.GetAllTags(c.Context())
 	if err != nil {
@@ -31,10 +37,77 @@ func (h *TagsHandler) GetAllTags(c *fiber.Ctx) error {
 	return utils.SendSuccess(c, fiber.StatusOK, tags)
 }
 
+// @Summary Create a new tag
+// @Description Create a new tag
+// @Tags tags
+// @Accept json
+// @Produce json
+// @Param tags body dto.TagsRequest true "Tags request"
+// @Success 200 {object} model.Tags
+// @Router /tags [post]
 func (h *TagsHandler) CreateTags(c *fiber.Ctx) error {
-	return nil
+	var req dto.TagsRequest
+
+	if err := c.BodyParser(&req); err != nil {
+        return utils.SendError(c, fiber.StatusBadRequest, "Invalid request body")
+    }
+
+    if err := utils.ValidateStruct(&req); err != nil {
+        return utils.SendValidationError(c, err)
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+	existingTag, err := h.tagsService.FindOneTags(ctx, bson.M{"name": req.Name})
+    if err != nil {
+        return utils.SendError(c, fiber.StatusBadRequest, err.Error())
+    }
+	
+	fmt.Println(existingTag)
+
+	if existingTag != nil {
+		return utils.SendError(c, fiber.StatusBadRequest, "Tags already exist")
+	}
+
+	tag, err := h.tagsService.CreateTags(ctx, req)
+    if err != nil {
+        return utils.SendError(c, fiber.StatusInternalServerError, err.Error())
+    }
+
+	return utils.SendSuccess(c, fiber.StatusOK, tag)
 }
 
+// @Summary Delete a tag
+// @Description Delete a tag
+// @Tags tags
+// @Produce json
+// @Param id path string true "Tag ID"
+// @Success 200 {object} nil
+// @Router /tags/{id} [delete]
 func (h *TagsHandler) DeleteTags(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return utils.SendError(c, fiber.StatusBadRequest, "Invalid ID format")
+    }
+
+	tag, err := h.tagsService.FindOneTags(ctx, bson.M{"_id": objID})
+	if err != nil {
+		return utils.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	if tag == nil {
+		return utils.SendError(c, fiber.StatusBadRequest, "Tags not found")
+	}
+
+	if err := h.tagsService.DeleteTags(ctx, objID); err != nil {
+		return utils.SendError(c, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return utils.SendSuccess(c, fiber.StatusOK, nil, "Tags deleted successfully")
 }
