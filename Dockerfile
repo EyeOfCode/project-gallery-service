@@ -14,8 +14,6 @@ RUN go mod download
 
 RUN go mod tidy
 
-RUN mkdir -p tmp && chmod 755 tmp
-
 # Copy source code
 COPY . .
 
