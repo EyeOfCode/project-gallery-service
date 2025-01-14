@@ -63,7 +63,7 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,PATCH",
 		AllowHeaders:     "Origin,Authorization,Content-Type",
 		ExposeHeaders:    "Content-Length",
-		AllowCredentials: cfg.ServerState == "production",
+		AllowCredentials: false,
 		MaxAge:           12 * 60 * 60, // 12 hours
 	}))
 
