@@ -20,7 +20,7 @@ jobs:
 
       - name: Build application
         run: |
-          go mod download
+          go mod tidy
           go build cmd/api/main.go
 
       - name: Copy repository contents via scp
