@@ -56,5 +56,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            chmod -R 755 ./scripts/scripts.sh
-            ./scripts/scripts.sh
+            docker-compose down
+            docker compose up -d --build
+            docker system prune -a -f
