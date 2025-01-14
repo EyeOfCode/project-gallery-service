@@ -56,6 +56,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            cd /var/www/app/gallery-service 
             docker-compose down
             docker compose up -d --build
             docker system prune -a -f
