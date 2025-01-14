@@ -15,7 +15,7 @@ services:
       - app-gallery-network
 
   mongodb:
-    image: mongo:latest
+    image: mongo:4.4.18
     container_name: mongodb
     ports:
       - "27017:27017"
