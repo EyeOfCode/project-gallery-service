@@ -32,5 +32,5 @@ func (app *Application) SetupRoutes() {
 	tags := v1.Group("/tags")
 	tags.Get("/", app.TagsHandler.GetAllTags)
 	tags.Post("/", app.TagsHandler.CreateTags)
-	tags.Delete("/:id", app.TagsHandler.DeleteTags)
+	tags.Delete("/:tag", app.TagsHandler.DeleteTags)
 }
