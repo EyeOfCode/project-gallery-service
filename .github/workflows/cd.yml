@@ -37,6 +37,7 @@ jobs:
           source: "."
           target: "/var/www/app/gallery-service"
           rm: true
+          rm_exclude: "mongodb_data/"
 
       - name: Create env file
         run: |
