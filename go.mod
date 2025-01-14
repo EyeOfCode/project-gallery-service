@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/fiber-swagger v1.3.0
+	github.com/swaggo/swag v1.16.3
 	go.mongodb.org/mongo-driver v1.17.1
 )
 
@@ -35,7 +36,6 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	github.com/swaggo/swag v1.16.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

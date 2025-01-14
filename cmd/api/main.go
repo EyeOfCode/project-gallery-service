@@ -85,9 +85,9 @@ func setupServer(cfg *config.Config) (*routes.Application, error) {
 
 	// Create application instance
 	application := &routes.Application{
-		App:            app,
-		TagsHandler:    tagsHandler,
-		Config:         cfg,
+		App:         app,
+		TagsHandler: tagsHandler,
+		Config:      cfg,
 	}
 
 	// Setup routes

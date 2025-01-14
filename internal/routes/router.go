@@ -14,9 +14,9 @@ import (
 )
 
 type Application struct {
-	App              *fiber.App
-	TagsHandler      *handlers.TagsHandler
-	Config           *config.Config
+	App         *fiber.App
+	TagsHandler *handlers.TagsHandler
+	Config      *config.Config
 }
 
 func (app *Application) SetupRoutes() {

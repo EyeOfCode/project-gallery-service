@@ -27,15 +27,15 @@ func (s *TagsService) GetAllTags(ctx context.Context) ([]model.Tags, error) {
 
 func (s *TagsService) CreateTags(ctx context.Context, req dto.TagsRequest) (*model.Tags, error) {
 	now := time.Now()
-    tag := &model.Tags{
-        ID:        primitive.NewObjectID(),
-        Name:      req.Name,
-        CreatedAt: now,
-        UpdatedAt: now,
-    }
+	tag := &model.Tags{
+		ID:        primitive.NewObjectID(),
+		Name:      req.Name,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
 	if err := s.tagsRepo.Create(ctx, tag); err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 	return tag, nil
 }
 

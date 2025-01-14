@@ -13,7 +13,7 @@ import (
 type TagsRepository interface {
 	FindAll(ctx context.Context, query bson.M) ([]model.Tags, error)
 	FindOne(ctx context.Context, query bson.M) (*model.Tags, error)
-	Create(ctx context.Context, tags *model.Tags) (error)
+	Create(ctx context.Context, tags *model.Tags) error
 	Delete(ctx context.Context, id primitive.ObjectID) error
 }
 
@@ -44,20 +44,20 @@ func (r *tagsRepository) FindOne(ctx context.Context, query bson.M) (*model.Tags
 	err := r.collection.FindOne(ctx, query).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-            return nil, nil 
-        }
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (r *tagsRepository) Create(ctx context.Context, tags *model.Tags) (error) {
+func (r *tagsRepository) Create(ctx context.Context, tags *model.Tags) error {
 	tags.ID = primitive.NewObjectID()
-    tags.CreatedAt = time.Now()
-    tags.UpdatedAt = time.Now()
-    
-    _, err := r.collection.InsertOne(ctx, tags)
-    return err
+	tags.CreatedAt = time.Now()
+	tags.UpdatedAt = time.Now()
+
+	_, err := r.collection.InsertOne(ctx, tags)
+	return err
 }
 
 func (r *tagsRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
